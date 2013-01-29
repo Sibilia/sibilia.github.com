@@ -41,4 +41,42 @@ categories: [drbd, linux, cluster]
     rate 100M;
 }>
 
+# DRBD Split-brain
+
+Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:
+
+> /# drbd-overview
+> 3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
+
+Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
+	На secondary:
+		> /# drbdadm disconnect just
+		> /# drbdadm -- --discard-my-data connect just
+
+	 На primary:
+		> /# drbdadm connect just
+
+После синхронизации (если она необходима) всё должно работать:
+
+> /# drbd-overview
+> 3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

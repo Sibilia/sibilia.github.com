@@ -36,11 +36,11 @@ categories: [drbd, linux, cluster]
 	/# drbdsetup /dev/drbd2 syncer -r 10M
 
 Для задания в настройках необходимо прописать в /etc/drbd.conf :
-
-		syncer {
-    		rate 100M;
-		}
-
+```
+syncer {
+	rate 100M;
+}
+```
 ### DRBD Split-brain
 
 Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:

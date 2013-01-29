@@ -5,8 +5,14 @@
         <lastmod>2013-01-29T13:51:57+03:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/
+        </loc>
+        <lastmod>2013-01-29T15:05:32+03:00</lastmod>
+    </url>
+    <url>
         <loc>http://Sibilia.github.com/</loc>
-        <lastmod>2013-01-29T13:51:57+03:00</lastmod>
+        <lastmod>2013-01-29T15:05:32+03:00</lastmod>
     </url>
     <url>
         <loc>http://Sibilia.github.com/robots.txt</loc>
@@ -14,6 +20,6 @@
     </url>
     <url>
         <loc>http://Sibilia.github.com/blog/archives/</loc>
-        <lastmod>2013-01-29T13:51:57+03:00</lastmod>
+        <lastmod>2013-01-29T15:05:32+03:00</lastmod>
     </url>
 </urlset>

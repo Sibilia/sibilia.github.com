@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
-  <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
+  <title><![CDATA[Category: linux | My Octopress Blog]]></title>
+  <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
   <updated>2013-01-29T15:05:41+03:00</updated>
   <id>http://Sibilia.github.com/</id>
@@ -54,15 +54,15 @@ New drbd meta data block successfully created.
 <pre><code># drbdsetup /dev/drbd2 syncer -r 10M
 </code></pre>
 
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :</p>
+<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :
+```
+syncer {</p>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>syncer {
-</span><span class='line'>  rate 100M;
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+<pre><code>rate 100M;
+</code></pre>
 
+<p>}
+```</p>
 
 <h3>DRBD Split-brain</h3>
 
@@ -89,17 +89,6 @@ New drbd meta data block successfully created.
 <pre><code># drbd-overview
 3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
 </code></pre>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[First post]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/01/29/first-post/"/>
-    <updated>2013-01-29T13:50:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/01/29/first-post</id>
-    <content type="html"><![CDATA[<h1>Hello</h1>
-
-<p>Test post.</p>
 ]]></content>
   </entry>
   

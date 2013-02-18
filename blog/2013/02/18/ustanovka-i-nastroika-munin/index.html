@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Sibilia octopress blog</title>
+  <title>Установка и настройка Munin - Sibilia octopress blog</title>
   <meta name="author" content="Ilia Sibiryatkin">
 
   
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://Sibilia.github.com/">
+  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -62,15 +62,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Установка и настройка Munin</a></h1>
+      <h1 class="entry-title">Установка и настройка Munin</h1>
     
     
       <p class="meta">
@@ -88,14 +85,14 @@
 
 <time datetime="2013-02-18T15:07:00+03:00" pubdate data-updated="true">Feb 18<span>th</span>, 2013</time>
         
-         | <a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/#disqus_thread">Comments</a>
+         | <a href="#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
+<div class="entry-content"><p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
 
 <h3>Установка</h3>
 
@@ -266,22 +263,16 @@ accesses.value 23325651
 <p>На главном сервере Munin необходим Web сервер. В файле /etc/munin/munin.conf прописывается куда будут генерироваться итоговые .html
 Например для стандартных настроек достаточно просто в браузере перейти на ip адресс главного сервера munin: http://172.16.0.10/munin</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Решение некоторых проблем в DRBD</a></h1>
-    
-    
-      <p class="meta">
-        
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Ilia Sibiryatkin</span></span>
+
+      
 
 
 
@@ -293,99 +284,46 @@ accesses.value 23325651
   
 
 
-<time datetime="2013-01-29T14:39:00+03:00" pubdate data-updated="true">Jan 29<span>th</span>, 2013</time>
-        
-         | <a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/#disqus_thread">Comments</a>
-        
-      </p>
+<time datetime="2013-02-18T15:07:00+03:00" pubdate data-updated="true">Feb 18<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+    </p>
     
-  </header>
-
-
-  <div class="entry-content"><h3>DRBD Diskless</h3>
-
-<p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
-
-<pre><code># drbd-overview
-2:r2 Connected Secondary/Primary Diskless/UpToDate C r----
-</code></pre>
-
-<h4>Для решения этой проблемы необходимо сбросить мета данные:</h4>
-
-<p>На активной ноде необходимо отмонтировать раздел. Затем на неактивной ноде отключаем ресурс:</p>
-
-<pre><code># drbdadm down r2
-</code></pre>
-
-<p>Создаем заново блок мета-данных:</p>
-
-<pre><code># drbdadm create-md r2
- ...
-New drbd meta data block successfully created.
-</code></pre>
-
-<p>Включаем ресурс обратно (должна начаться синхронизация):</p>
-
-<pre><code># drbdadm up r2
-# drbdadm connect r2
-# drbd-overview 
-2:r2 SyncTarget Secondary/Primary Inconsistent/UpToDate C r---- 
-[&gt;....................] sync'ed: 0.1% (31796/31796)M queue_delay: 0.0 ms 
-</code></pre>
-
-<p>Для изменения скорости синхронизации можно ввести:</p>
-
-<pre><code># drbdsetup /dev/drbd2 syncer -r 10M
-</code></pre>
-
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>syncer {
-</span><span class='line'>  rate 100M;
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>DRBD Split-brain</h3>
-
-<p>Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:</p>
-
-<pre><code># drbd-overview
-3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
-
-<p>Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
-На secondary:</p>
-
-<pre><code># drbdadm disconnect just
-# drbdadm -- --discard-my-data connect just
-</code></pre>
-
-<p>На primary:</p>
-
-<pre><code># drbdadm connect just
-</code></pre>
-
-<p>После синхронизации (если она необходима) всё должно работать:</p>
-
-<pre><code># drbd-overview
-3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
 </div>
-  
-  
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/" title="Previous Post: Решение некоторых проблем в DRBD">&laquo; Решение некоторых проблем в DRBD</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 </div>
+  </section>
+
+</div>
+
 <aside class="sidebar">
   
     <section>
@@ -406,7 +344,7 @@ New drbd meta data block successfully created.
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/Sibilia">@Sibilia</a> on GitHub
@@ -449,6 +387,7 @@ New drbd meta data block successfully created.
   
 </aside>
 
+
     </div>
   </div>
   <footer role="contentinfo"><p>
@@ -463,7 +402,10 @@ New drbd meta data block successfully created.
       var disqus_shortname = 'sibilia-octopress';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/';
+        var disqus_url = 'http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

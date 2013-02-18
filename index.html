@@ -99,174 +99,12 @@
 
 <h3>Установка</h3>
 
-<p>Приведу пример установки клиента и сервера для CentOS/RHEL. Для Debian/Ubuntu всё почти аналогично.
-Для начала установим главный сервер:</p>
-
-<pre><code># yum install munin munin-node
-</code></pre>
-
-<p>Для клиентов необходим только munin-node:</p>
-
-<pre><code># yum install munin-node
-</code></pre>
-
-<h3>Настройка</h3>
-
-<p>Главный файл настройки сервера Munin /etc/munin/munin.conf. В нём необходимо прописать клиентов:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># a simple host tree
-</span><span class='line'>[node1]
-</span><span class='line'>  address 172.16.0.12
-</span><span class='line'>  use_node_name yes
-</span><span class='line'>
-</span><span class='line'>[node2]
-</span><span class='line'>  address 172.16.0.13
-</span><span class='line'>    use_node_name yes
-</span><span class='line'>
-</span><span class='line'>[bckp]
-</span><span class='line'>    address 127.0.0.1
-</span><span class='line'>    use_node_name yes</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Для настройки клиентов нам необходимо подправить /etc/munin/munin-node.conf:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># Разрешаем подключаться серверу:
-</span><span class='line'>allow ^127\.0\.0\.1$
-</span><span class='line'>allow ^172\.16\.0\.10$ # ip address bckp 
-</span><span class='line'>
-</span><span class='line'># указываем host name и ip
-</span><span class='line'>host_name node1
-</span><span class='line'>host 172.16.0.12</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Теперь включим парочку дополнительных плагинов:</p>
-
-<pre><code>ln -s /usr/share/munin/plugins/acpi /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat_ios /etc/munin/plugins/
-</code></pre>
-
-<p>Как видно из примера плагины подключаются созданием симлинка в /etc/munin/plugins/</p>
-
-<h5>Подключение плагинов для MongoDB</h5>
-
-<p>Плагины для MongoDB не идут в стандартной поставке, но их не сложно установить.</p>
-
-<pre><code># wget https://github.com/erh/mongo-munin/archive/master.zip -O /tmp/mongo-munin.zip
-# unzip /tmp/mongo-munin.zip /tmp/
-# mkdir -p /usr/local/share/munin/plugins
-# cp /tmp/mongo-munin-master/mongo_* /usr/local/share/munin/plugins/
-
-# ln -s /usr/local/share/munin/plugins/mongo_btree /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_conn /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_lock /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_mem /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_ops /etc/munin/plugins/
-</code></pre>
-
-<p>Не забываем перезагружать munin после правки конфигов и добавления/удаления плагинов.</p>
-
-<pre><code># /etc/init.d/munin-node restart
-</code></pre>
-
-<p>Можно проверить просто запустив один из скриптов. Первоначально у меня они не отрабатывали:</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-...
-  File "/usr/lib64/python2.6/json/decoder.py", line 319, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-  File "/usr/lib64/python2.6/json/decoder.py", line 338, in raw_decode
-    raise ValueError("No JSON object could be decoded")
-ValueError: No JSON object could be decoded
-</code></pre>
-
-<p>Подравив в скрипте вывод значения я выяснил в чём проблема&#8230;</p>
-
-<pre><code># vim /usr/local/share/munin/plugins/mongo_btree
-</code></pre>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>28     raw = urllib2.urlopen(req).read()
-</span><span class='line'>29     print raw
-</span><span class='line'>30     return json.loads( raw )["serverStatus"]</span></code></pre></td></tr></table></div></figure>
-
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-You are trying to access MongoDB on the native driver port. For http diagnostic access, add 1000 to the port number
-....
-</code></pre>
-
-<p>Сново правим скрипт не забыв удалить добавленную строчку на прошлом этапе.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>url = "http://%s:%d/_status" % (host, port+1000)</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Теперь всё в порядке.</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-missRatio.value 0
-resets.value 0
-hits.value 23325605
-misses.value 46
-accesses.value 23325651
-</code></pre>
-
-<p>Не забываем сделать соответствующие поправки в остальных скриптах mongo_</p>
-
-<h5>Подключение плагинов для MySQL</h5>
-
-<p>В стандартной поставке есть плагины для mysql, если нужно, подключаем и их:</p>
-
-<pre><code># ln -s /usr/share/munin/plugins/mysql_* /etc/munin/plugins
-</code></pre>
-
-<p>Для их работы необходимы дополнительные пакеты для perl:</p>
-
-<pre><code># yum install perl-Cache-Cache perl-DBD-MySQL perl-IPC-ShareLite
-</code></pre>
-
-<p>Если ещё чего не хватит, то это легко выяснить чтением логов /var/log/munin-node/munin-node.log.
-Создаём в mysql пользователя для munin:</p>
-
-<pre><code># mysql -u root -p -e 'create user munin'
-</code></pre>
-
-<p>Подправим файл /etc/munin/plugin-conf.d/munin-node:</p>
-
-<pre><code>[mysql*]
-    user root
-    env.mysqlopts --defaults-file=/etc/mysql/my.cnf
-    env.mysqluser munin
-</code></pre>
-
-<h5>Использование.</h5>
-
-<p>На главном сервере Munin необходим Web сервер. В файле /etc/munin/munin.conf прописывается куда будут генерироваться итоговые .html
-Например для стандартных настроек достаточно просто в браузере перейти на ip адресс главного сервера munin: http://172.16.0.10/munin</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -302,7 +140,9 @@ accesses.value 23325651
   </header>
 
 
-  <div class="entry-content"><h3>DRBD Diskless</h3>
+  <div class="entry-content"><p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
+
+<h3>DRBD Diskless</h3>
 
 <p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
 
@@ -324,57 +164,12 @@ accesses.value 23325651
 New drbd meta data block successfully created.
 </code></pre>
 
-<p>Включаем ресурс обратно (должна начаться синхронизация):</p>
-
-<pre><code># drbdadm up r2
-# drbdadm connect r2
-# drbd-overview 
-2:r2 SyncTarget Secondary/Primary Inconsistent/UpToDate C r---- 
-[&gt;....................] sync'ed: 0.1% (31796/31796)M queue_delay: 0.0 ms 
-</code></pre>
-
-<p>Для изменения скорости синхронизации можно ввести:</p>
-
-<pre><code># drbdsetup /dev/drbd2 syncer -r 10M
-</code></pre>
-
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>syncer {
-</span><span class='line'>  rate 100M;
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>DRBD Split-brain</h3>
-
-<p>Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:</p>
-
-<pre><code># drbd-overview
-3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
-
-<p>Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
-На secondary:</p>
-
-<pre><code># drbdadm disconnect just
-# drbdadm -- --discard-my-data connect just
-</code></pre>
-
-<p>На primary:</p>
-
-<pre><code># drbdadm connect just
-</code></pre>
-
-<p>После синхронизации (если она необходима) всё должно работать:</p>
-
-<pre><code># drbd-overview
-3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Read on &rarr;</a>
+    </footer>
   
 
 

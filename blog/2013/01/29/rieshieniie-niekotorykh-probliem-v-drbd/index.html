@@ -9,8 +9,7 @@
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="DRBD Diskless При выходе из строя дискового массива и его восстановления можно получить следующую ситуацию в drbd: # drbd-overview
-2:r2 Connected &hellip;">
+  <meta name="description" content="Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain. DRBD Diskless При выходе из строя дискового массива и его восстановления можно &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -93,7 +92,9 @@
   </header>
 
 
-<div class="entry-content"><h3>DRBD Diskless</h3>
+<div class="entry-content"><p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
+
+<h3>DRBD Diskless</h3>
 
 <p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
 
@@ -114,6 +115,9 @@
  ...
 New drbd meta data block successfully created.
 </code></pre>
+
+<!-- more -->
+
 
 <p>Включаем ресурс обратно (должна начаться синхронизация):</p>
 

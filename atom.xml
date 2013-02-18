@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-02-18T18:50:33+03:00</updated>
+  <updated>2013-02-18T19:02:26+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -21,6 +21,9 @@
     <content type="html"><![CDATA[<p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
 
 <h3>Установка</h3>
+
+<!-- more -->
+
 
 <p>Приведу пример установки клиента и сервера для CentOS/RHEL. Для Debian/Ubuntu всё почти аналогично.
 Для начала установим главный сервер:</p>
@@ -196,7 +199,9 @@ accesses.value 23325651
     <link href="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/"/>
     <updated>2013-01-29T14:39:00+03:00</updated>
     <id>http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd</id>
-    <content type="html"><![CDATA[<h3>DRBD Diskless</h3>
+    <content type="html"><![CDATA[<p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
+
+<h3>DRBD Diskless</h3>
 
 <p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
 
@@ -217,6 +222,9 @@ accesses.value 23325651
  ...
 New drbd meta data block successfully created.
 </code></pre>
+
+<!-- more -->
+
 
 <p>Включаем ресурс обратно (должна начаться синхронизация):</p>
 

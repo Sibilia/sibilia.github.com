@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-02-18T19:02:26+03:00</updated>
+  <updated>2013-02-19T13:34:09+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -20,10 +20,10 @@
     <id>http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin</id>
     <content type="html"><![CDATA[<p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
 
-<h3>Установка</h3>
-
 <!-- more -->
 
+
+<h3>Установка</h3>
 
 <p>Приведу пример установки клиента и сервера для CentOS/RHEL. Для Debian/Ubuntu всё почти аналогично.
 Для начала установим главный сервер:</p>
@@ -175,6 +175,20 @@ accesses.value 23325651
     user root
     env.mysqlopts --defaults-file=/etc/mysql/my.cnf
     env.mysqluser munin
+</code></pre>
+
+<h5>Добавление в автозагрузку</h5>
+
+<p>Добавить в автозагрузку не сложно. Необходимо выполнить на каждом сервере:</p>
+
+<pre><code># chkconfig --add munin-node
+# chkconfig munin-node on
+</code></pre>
+
+<p>Проверяем:</p>
+
+<pre><code># chkconfig --list munin-node
+munin-node      0:off   1:off   2:on    3:on    4:on    5:on    6:off
 </code></pre>
 
 <h5>Использование.</h5>

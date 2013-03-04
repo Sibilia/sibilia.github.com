@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-04T20:45:16+03:00</updated>
+  <updated>2013-03-04T20:47:54+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -75,7 +75,7 @@
 
 
 <p>Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
-В таком случае на нет нужды использовать таблицу filter.</p>
+В таком случае нет нужды использовать таблицу filter.</p>
 ]]></content>
   </entry>
   

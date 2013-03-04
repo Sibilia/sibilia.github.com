@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-04T14:46:33+03:00</updated>
+  <updated>2013-03-04T20:45:16+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -40,13 +40,27 @@ iptables -t nat -A HTTP_REDIR -p tcp --dport 80 -j REDIRECT --to-port 20302
 iptables -t filter -A HTTP_REDIR -p tcp --dport 80 -j REJECT --reject-with tcp-reset
 </code>
 Если необходимо перенаправлять к примеру ещё и https то можно вместо "--dport 80" указать "-m multiport --dports 80,443"
-Чтобы убрать перенаправление, просто чистим нашу цепочку. И не забываем сбросить активные сессии на порт перенаправления.
+Чтобы убрать перенаправление, просто чистим нашу цепочку.
 <code>
 iptables -t nat -F HTTP_REDIR
 iptables -t filter -F HTTP_REDIR
-iptables -t filter -A HTTP_REDIR -p tcp --dport 20302 -j REJECT --reject-with tcp-reset
 </code>
 Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
+
+<h4>P.S.</h4>
+
+<p>Нашел более удобный способ сброса активный tcp соединений. Называется conntrack.
+Пакет называется по разному, в Debian вроде просто conntrack, в CentOS/RedHat conntrack-tool.
+После установки, у нас появляется возможность удобно посмотреть активные соединения и их статус:
+<code>
+conntrack -L -p tcp --dport 80
+</code>
+Так же удобно их разом очистить:
+<code>
+conntrack -D -p tcp --dport 80
+</code>
+Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
+В таком случае на нет нужды использовать таблицу filter.</p>
 ]]></content>
   </entry>
   

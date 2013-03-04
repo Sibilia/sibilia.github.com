@@ -122,17 +122,34 @@
 
 
 <p>Если необходимо перенаправлять к примеру ещё и https то можно вместо &#8220;&#8211;dport 80&#8221; указать &#8220;-m multiport &#8211;dports 80,443&#8221;
-Чтобы убрать перенаправление, просто чистим нашу цепочку. И не забываем сбросить активные сессии на порт перенаправления.</p>
+Чтобы убрать перенаправление, просто чистим нашу цепочку.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
-<span class='line-number'>3</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -F HTTP_REDIR
-</span><span class='line'>iptables -t filter -F HTTP_REDIR
-</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 20302 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>iptables -t filter -F HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
+
+<h4>P.S.</h4>
+
+<p>Нашел более удобный способ сброса активный tcp соединений. Называется conntrack.
+Пакет называется по разному, в Debian вроде просто conntrack, в CentOS/RedHat conntrack-tool.
+После установки, у нас появляется возможность удобно посмотреть активные соединения и их статус:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>conntrack -L -p tcp --dport 80</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Так же удобно их разом очистить:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>conntrack -D -p tcp --dport 80</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
+В таком случае на нет нужды использовать таблицу filter.</p>
 </div>
 
 

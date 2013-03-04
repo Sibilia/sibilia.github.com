@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-02-19T13:34:09+03:00</updated>
+  <updated>2013-03-04T14:46:33+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,55 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Перенаправление http]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/"/>
+    <updated>2013-03-04T13:53:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http</id>
+    <content type="html"><![CDATA[<p>Возникла необходимость по наступлению определённого события временно перенаправлять http соединения на другой порт, где слушает nginx с заглушкой. Это легко можно сделать с помошью парочки правил в iptables. Приведу несколько основных моментов из bash скрипта.
+Нам нужны две таблицы в новой цепочке: &#8220;nat&#8221; для непосредственно перенаправления и &#8220;filter&#8221; для сброса активных сессий. Фильтровать активные сессии необходимо потому, что в таблицу &#8220;nat&#8221;, цепочки PREROUTING, поподают лишь tcp соединения с состоянием NEW. Активные tcp соединения живут примерно 2-3 минуты. Если это не критично, то можно обойтись без их фильтрации. Для этого просто не добавляем все правила в которых указана таблица &#8220;filter&#8221;.
+Для начала создадим новую цепочку. Это удобно тем что её можно очистить полностью, когда необходимо вернуть всё к изначальному состоянию.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -N HTTP_REDIR
+</span><span class='line'>iptables -t filter -N HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
+
+
+<!-- more -->
+
+
+<p>Теперь создадим два правила в цепочках PREROUTING и INPUT в которых будем направлять tcp в нашу цепочку. Эти правила не будут удаляться.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -I PREROUTING -p tcp -j HTTP_REDIR
+</span><span class='line'>iptables -t filter -I INPUT -p tcp -j HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь, если нам необходимо включить перенаправление, то добавляем правила в нашу цепочку:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -A HTTP_REDIR -p tcp --dport 80 -j REDIRECT --to-port 20302
+</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 80 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если необходимо перенаправлять к примеру ещё и https то можно вместо &#8220;&#8211;dport 80&#8221; указать &#8220;-m multiport &#8211;dports 80,443&#8221;
+Чтобы убрать перенаправление, просто чистим нашу цепочку. И не забываем сбросить активные сессии на порт перенаправления.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -F HTTP_REDIR
+</span><span class='line'>iptables -t filter -F HTTP_REDIR
+</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 20302 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Установка и настройка Munin]]></title>

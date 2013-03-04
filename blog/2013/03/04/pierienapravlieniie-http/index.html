@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Sibilia octopress blog</title>
+  <title>Перенаправление http - Sibilia octopress blog</title>
   <meta name="author" content="Ilia Sibiryatkin">
 
   
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://Sibilia.github.com/">
+  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -62,15 +62,12 @@
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2013/03/04/pierienapravlieniie-http/">Перенаправление Http</a></h1>
+      <h1 class="entry-title">Перенаправление Http</h1>
     
     
       <p class="meta">
@@ -88,14 +85,14 @@
 
 <time datetime="2013-03-04T13:53:00+03:00" pubdate data-updated="true">Mar 4<span>th</span>, 2013</time>
         
-         | <a href="/blog/2013/03/04/pierienapravlieniie-http/#disqus_thread">Comments</a>
+         | <a href="#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>Возникла необходимость по наступлению определённого события временно перенаправлять http соединения на другой порт, где слушает nginx с заглушкой. Это легко можно сделать с помошью парочки правил в iptables. Приведу несколько основных моментов из bash скрипта.
+<div class="entry-content"><p>Возникла необходимость по наступлению определённого события временно перенаправлять http соединения на другой порт, где слушает nginx с заглушкой. Это легко можно сделать с помошью парочки правил в iptables. Приведу несколько основных моментов из bash скрипта.
 Нам нужны две таблицы в новой цепочке: &#8220;nat&#8221; для непосредственно перенаправления и &#8220;filter&#8221; для сброса активных сессий. Фильтровать активные сессии необходимо потому, что в таблицу &#8220;nat&#8221;, цепочки PREROUTING, поподают лишь tcp соединения с состоянием NEW. Активные tcp соединения живут примерно 2-3 минуты. Если это не критично, то можно обойтись без их фильтрации. Для этого просто не добавляем все правила в которых указана таблица &#8220;filter&#8221;.
 Для начала создадим новую цепочку. Это удобно тем что её можно очистить полностью, когда необходимо вернуть всё к изначальному состоянию.</p>
 
@@ -105,70 +102,48 @@
 </span><span class='line'>iptables -t filter -N HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
 
 
+<!-- more -->
+
+
+<p>Теперь создадим два правила в цепочках PREROUTING и INPUT в которых будем направлять tcp в нашу цепочку. Эти правила не будут удаляться.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -I PREROUTING -p tcp -j HTTP_REDIR
+</span><span class='line'>iptables -t filter -I INPUT -p tcp -j HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь, если нам необходимо включить перенаправление, то добавляем правила в нашу цепочку:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -A HTTP_REDIR -p tcp --dport 80 -j REDIRECT --to-port 20302
+</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 80 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если необходимо перенаправлять к примеру ещё и https то можно вместо &#8220;&#8211;dport 80&#8221; указать &#8220;-m multiport &#8211;dports 80,443&#8221;
+Чтобы убрать перенаправление, просто чистим нашу цепочку. И не забываем сбросить активные сессии на порт перенаправления.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -F HTTP_REDIR
+</span><span class='line'>iptables -t filter -F HTTP_REDIR
+</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 20302 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/03/04/pierienapravlieniie-http/">Read on &rarr;</a>
-    </footer>
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Установка и настройка Munin</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
   
 
+<span class="byline author vcard">Posted by <span class="fn">Ilia Sibiryatkin</span></span>
 
-<time datetime="2013-02-18T15:07:00+03:00" pubdate data-updated="true">Feb 18<span>th</span>, 2013</time>
-        
-         | <a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Решение некоторых проблем в DRBD</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
@@ -180,56 +155,46 @@
   
 
 
-<time datetime="2013-01-29T14:39:00+03:00" pubdate data-updated="true">Jan 29<span>th</span>, 2013</time>
-        
-         | <a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/#disqus_thread">Comments</a>
-        
-      </p>
+<time datetime="2013-03-04T13:53:00+03:00" pubdate data-updated="true">Mar 4<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/iptables/'>iptables</a>, <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+    </p>
     
-  </header>
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+</div>
 
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/02/18/ustanovka-i-nastroika-munin/" title="Previous Post: Установка и настройка Munin">&laquo; Установка и настройка Munin</a>
+      
+      
+    </p>
+  </footer>
+</article>
 
-  <div class="entry-content"><p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
-
-<h3>DRBD Diskless</h3>
-
-<p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
-
-<pre><code># drbd-overview
-2:r2 Connected Secondary/Primary Diskless/UpToDate C r----
-</code></pre>
-
-<h4>Для решения этой проблемы необходимо сбросить мета данные:</h4>
-
-<p>На активной ноде необходимо отмонтировать раздел. Затем на неактивной ноде отключаем ресурс:</p>
-
-<pre><code># drbdadm down r2
-</code></pre>
-
-<p>Создаем заново блок мета-данных:</p>
-
-<pre><code># drbdadm create-md r2
- ...
-New drbd meta data block successfully created.
-</code></pre>
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
 
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Read on &rarr;</a>
-    </footer>
-  
 
-
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -254,7 +219,7 @@ New drbd meta data block successfully created.
 <section>
   <h1>GitHub Repos</h1>
   <ul id="gh_repos">
-    <li class="loading">Status updating&#8230;</li>
+    <li class="loading">Status updating...</li>
   </ul>
   
   <a href="https://github.com/Sibilia">@Sibilia</a> on GitHub
@@ -297,6 +262,7 @@ New drbd meta data block successfully created.
   
 </aside>
 
+
     </div>
   </div>
   <footer role="contentinfo"><p>
@@ -311,7 +277,10 @@ New drbd meta data block successfully created.
       var disqus_shortname = 'sibilia-octopress';
       
         
-        var disqus_script = 'count.js';
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/';
+        var disqus_url = 'http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/';
+        var disqus_script = 'embed.js';
       
     (function () {
       var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

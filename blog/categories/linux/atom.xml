@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-04T20:47:54+03:00</updated>
+  <updated>2013-03-05T12:58:27+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -49,7 +49,7 @@ iptables -t filter -F HTTP_REDIR
 
 <h4>P.S.</h4>
 
-<p>Нашел более удобный способ сброса активный tcp соединений. Называется conntrack.
+<p>Нашел более удобный способ сброса активный tcp соединений - conntrack.
 Пакет называется по разному, в Debian вроде просто conntrack, в CentOS/RedHat conntrack-tool.
 После установки, у нас появляется возможность удобно посмотреть активные соединения и их статус:
 <code>

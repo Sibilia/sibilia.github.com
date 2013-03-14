@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Установка crm shell в Pacemaker - Sibilia octopress blog</title>
+  <meta name="author" content="Ilia Sibiryatkin">
+
+  
+  <meta name="description" content="В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7. Since late- &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Sibilia octopress blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Sibilia octopress blog</a></h1>
+  
+    <h2>notes on memory.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Sibilia.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Установка Crm Shell в Pacemaker</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-14T14:36:00+03:00" pubdate data-updated="true">Mar 14<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7.</p>
+
+<blockquote><p>Since late-April, the crm shell is no longer included in the Pacemaker source tree. This change was made at the author&#8217;s request as it is now maintained as a separate [project](https://savannah.nongnu.org/projects/crmsh/)</p><footer><strong>ClusterLabs</strong> <cite><a href='https://github.com/ClusterLabs/pacemaker#important-information-about-the-crm-shell'>Important Information About the Crm Shell</a></cite></footer></blockquote>
+
+
+<!-- more -->
+
+
+<p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты &#8220;crmsh&#8221; и &#8220;pssh&#8221;. Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
+Для CentOS 6 x86_64 достаточно следующее:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install pacemaker corosync
+</span><span class='line'>cd /tmp
+</span><span class='line'>wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/crmsh-1.2.5-55.2.x86_64.rpm
+</span><span class='line'>wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/pssh-2.3.1-15.1.x86_64.rpm
+</span><span class='line'>yum install ./crmsh*.rpm ./pssh*.rpm</span></code></pre></td></tr></table></div></figure>
+
+
+<p>На данный момент пакетов crmsh и pssh отсутствуют в официальных репозитариях RedHat/CentOS и в EPEL. Быть может в скором времени их туда добавят, или clusterlabs уладят совместимость.</p>
+
+<h3>P.S.</h3>
+
+<p>Вот кстати мой скрипт для отчистки failcount в выводе crm_mon -fnr. Это порой необходимо для востановления кластера после сбоя и обнуления счётчиков.</p>
+
+<figure class='code'><figcaption><span> (corosync_clear)</span> <a href='/downloads/code/corosync_clear'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'><span class="c"># Если значение failcount=1000000 у ресурса, то сбрасывается его состояние (crm resource cleanup &lt;res&gt;).</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># Author: Ilia Sibiryatkin &lt;Sibvilian@gmail.com&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">NODE</span><span class="o">=</span><span class="sb">`</span>crm_node -l |cut -d<span class="s1">&#39; &#39;</span> -f 2<span class="sb">`</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for </span>STR in <span class="k">$(</span>crm_mon -f1 | grep fail-count| awk <span class="s1">&#39;{ print $1 &quot;@&quot; $3 }&#39;</span><span class="k">)</span> ; <span class="k">do</span>
+</span><span class='line'><span class="k">  </span><span class="nv">RES</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($1,0,length($1)-1))}&#39;</span><span class="k">)</span>
+</span><span class='line'>        <span class="nv">FAIL</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($2,12,length($2)))}&#39;</span><span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">[[</span> <span class="nv">$FAIL</span> <span class="o">==</span> 1000000 <span class="o">]]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;cleanup $RES&quot;</span>
+</span><span class='line'>                crm resource cleanup <span class="nv">$RES</span>
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;clear fail-count $RES&quot;</span>
+</span><span class='line'>                <span class="k">for </span>i in <span class="nv">$NODE</span> ; <span class="k">do</span>
+</span><span class='line'><span class="k">                        </span>crm resource failcount <span class="nv">$RES</span> delete <span class="nv">$i</span>
+</span><span class='line'>                <span class="k">done </span>
+</span><span class='line'><span class="k">        fi</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Ilia Sibiryatkin</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-14T14:36:00+03:00" pubdate data-updated="true">Mar 14<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>, <a class='category' href='/blog/categories/pacemaker/'>pacemaker</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/03/04/pierienapravlieniie-http/" title="Previous Post: Перенаправление http">&laquo; Перенаправление http</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/">Установка crm shell в Pacemaker</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/04/pierienapravlieniie-http/">Перенаправление http</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Установка и настройка Munin</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Решение некоторых проблем в DRBD</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/Sibilia">@Sibilia</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'Sibilia',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus">
+  <h1>
+    <a href="https://plus.google.com/112831317637790292721?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Ilia Sibiryatkin -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'sibilia-octopress';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/';
+        var disqus_url = 'http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

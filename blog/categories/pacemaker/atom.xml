@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: pacemaker | Sibilia octopress blog]]></title>
+  <link href="http://Sibilia.github.com/blog/categories/pacemaker/atom.xml" rel="self"/>
+  <link href="http://Sibilia.github.com/"/>
+  <updated>2013-03-14T14:43:25+03:00</updated>
+  <id>http://Sibilia.github.com/</id>
+  <author>
+    <name><![CDATA[Ilia Sibiryatkin]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Установка crm shell в Pacemaker]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/"/>
+    <updated>2013-03-14T14:36:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker</id>
+    <content type="html"><![CDATA[<p>В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7.
+<blockquote><p>Since late-April, the crm shell is no longer included in the Pacemaker source tree. This change was made at the author's request as it is now maintained as a separate <a href="https://savannah.nongnu.org/projects/crmsh/">project</a></p><footer><strong>ClusterLabs</strong> <cite><a href='https://github.com/ClusterLabs/pacemaker#important-information-about-the-crm-shell'>Important Information About the Crm Shell</a></cite></footer></blockquote></p>
+
+<!-- more -->
+
+
+<p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты "crmsh" и "pssh". Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
+Для CentOS 6 x86_64 достаточно следующее:
+<code>
+yum install pacemaker corosync
+cd /tmp
+wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/crmsh-1.2.5-55.2.x86_64.rpm
+wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/pssh-2.3.1-15.1.x86_64.rpm
+yum install ./crmsh*.rpm ./pssh*.rpm
+</code>
+На данный момент пакетов crmsh и pssh отсутствуют в официальных репозитариях RedHat/CentOS и в EPEL. Быть может в скором времени их туда добавят, или clusterlabs уладят совместимость.</p>
+
+<h3>P.S.</h3>
+
+<p>Вот кстати мой скрипт для отчистки failcount в выводе crm_mon -fnr. Это порой необходимо для востановления кластера после сбоя и обнуления счётчиков.
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (corosync_clear)</span> <a href='/downloads/code/corosync_clear'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
+</span><span class='line'><span class="c"># Если значение failcount=1000000 у ресурса, то сбрасывается его состояние (crm resource cleanup &lt;res&gt;).</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># Author: Ilia Sibiryatkin &lt;Sibvilian@gmail.com&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">NODE</span><span class="o">=</span><span class="sb">`</span>crm_node -l |cut -d<span class="s1">&#39; &#39;</span> -f 2<span class="sb">`</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">for </span>STR in <span class="k">$(</span>crm_mon -f1 | grep fail-count| awk <span class="s1">&#39;{ print $1 &quot;@&quot; $3 }&#39;</span><span class="k">)</span> ; <span class="k">do</span>
+</span><span class='line'><span class="k">	</span><span class="nv">RES</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($1,0,length($1)-1))}&#39;</span><span class="k">)</span>
+</span><span class='line'>        <span class="nv">FAIL</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($2,12,length($2)))}&#39;</span><span class="k">)</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">[[</span> <span class="nv">$FAIL</span> <span class="o">==</span> 1000000 <span class="o">]]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;cleanup $RES&quot;</span>
+</span><span class='line'>                crm resource cleanup <span class="nv">$RES</span>
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;clear fail-count $RES&quot;</span>
+</span><span class='line'>                <span class="k">for </span>i in <span class="nv">$NODE</span> ; <span class="k">do</span>
+</span><span class='line'><span class="k">                        </span>crm resource failcount <span class="nv">$RES</span> delete <span class="nv">$i</span>
+</span><span class='line'>                <span class="k">done </span>
+</span><span class='line'><span class="k">        fi</span>
+</span><span class='line'><span class="k">done</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -9,7 +9,7 @@
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7. Since late- &hellip;">
+  <meta name="description" content="Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из lsyncd и unison &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,52 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Синхронизация файлов с помощью Lsyncd и Unison</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-26T13:52:00+03:00" pubdate data-updated="true">Mar 26<span>th</span>, 2013</time>
+        
+         | <a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из <a href="https://code.google.com/p/lsyncd/">lsyncd</a> и <a href="http://www.cis.upenn.edu/~bcpierce/unison/">unison</a>.
+Lsyncd - это демонб который слушает дерево каталогов и выполняет синхронизацию при событии (inotify или fsevents) в нём. Синхронизировать он может с помощью rsync или любым другим способом, который можно прописать у него в настройках в виде скрипта на Lua.
+Unison позволяет синхронизировать файлы между серверами (или локально два различных каталога). В отличие от rsync он позволяет синхронизировать файлы одновременно в обе стороны. В качестве транспорта при синхронизации может быть использован ssh.
+Пример буду приводить для CentOS/RedHat, для .deb систем отличия в мелочах. Начнём с установки:</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -281,6 +327,10 @@ New drbd meta data block successfully created.
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Синхронизация файлов с помощью Lsyncd и Unison</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/">Установка crm shell в Pacemaker</a>

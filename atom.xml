@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-19T14:31:10+03:00</updated>
+  <updated>2013-03-26T15:54:50+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,119 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Синхронизация файлов с помощью Lsyncd и Unison]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/"/>
+    <updated>2013-03-26T13:52:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison</id>
+    <content type="html"><![CDATA[<p>Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из <a href="https://code.google.com/p/lsyncd/">lsyncd</a> и <a href="http://www.cis.upenn.edu/~bcpierce/unison/">unison</a>.
+Lsyncd - это демонб который слушает дерево каталогов и выполняет синхронизацию при событии (inotify или fsevents) в нём. Синхронизировать он может с помощью rsync или любым другим способом, который можно прописать у него в настройках в виде скрипта на Lua.
+Unison позволяет синхронизировать файлы между серверами (или локально два различных каталога). В отличие от rsync он позволяет синхронизировать файлы одновременно в обе стороны. В качестве транспорта при синхронизации может быть использован ssh.
+Пример буду приводить для CentOS/RedHat, для .deb систем отличия в мелочах. Начнём с установки:</p>
+
+<!-- more -->
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install lsyncd unison</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Далее правим конфигурационный файл lsyncd: /etc/lsyncd.conf</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>settings <span class="o">{</span>
+</span><span class='line'>        <span class="nv">logfile</span>         <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced.lsync.log&quot;</span>,
+</span><span class='line'>        <span class="nv">statusFile</span>      <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced.lsync.status&quot;</span>,
+</span><span class='line'>        <span class="nv">statusInterval</span>  <span class="o">=</span> 10,
+</span><span class='line'>        <span class="nv">maxDelays</span>       <span class="o">=</span> 3,
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">runUnison</span> <span class="o">=</span> <span class="o">[[</span>/usr/bin/unison -retry 5 -owner -group -batch /mnt/lsynced ssh://node2//mnt/lsynced<span class="o">]]</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">runbash</span> <span class="o">=</span> <span class="o">{</span>
+</span><span class='line'>        <span class="nv">onCreate</span> <span class="o">=</span> runUnison,
+</span><span class='line'>        <span class="nv">onDelete</span> <span class="o">=</span> runUnison,
+</span><span class='line'>        <span class="nv">onModify</span> <span class="o">=</span> runUnison,
+</span><span class='line'>        <span class="nv">onMove</span> <span class="o">=</span> runUnison,
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>sync <span class="o">{</span>
+</span><span class='line'>        runbash,
+</span><span class='line'>        <span class="nv">maxProcesses</span> <span class="o">=</span> 1,
+</span><span class='line'>        <span class="nv">delay</span> <span class="o">=</span> 3,
+</span><span class='line'>        <span class="nb">source</span> <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced&quot;</span>,
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>На втором сервере меняем имя хоста в строке вызова unison. Проверить можно запустив lsyncd в режиме nodaemon (или без этой опции и читать логи):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>lsyncd -nodaemon /etc/lsyncd.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Если всё отлично завершаем и переходим к настройке запуска lsyncd под corosync.
+Тут есть два способа: использовать lsb ресурс corosync или написать свой ресурс агент. Я рассмотрю первый вариант. Для второго у меня на github лежит ресурс агент, но я его ещё не до конца протестировал.</p>
+
+<h3>Corosync lsyncd LSB ресурс.</h3>
+
+<p>Нам понадобится скрипт lsyncd daemon: /etc/init.d/lsyncd. Он должен входить в пакет lsyncd начиная с версии 2.1. Учитывая один момент в нём:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">LSYNCD_OPTIONS</span><span class="o">=</span><span class="s2">&quot;-pidfile /var/run/lsyncd.pid /etc/lsyncd.conf&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="o">[</span> -e /etc/sysconfig/lsyncd <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>  . /etc/sysconfig/lsyncd
+</span><span class='line'><span class="k">fi</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>нам обязательно надо прописать опции запуска в файле /etc/sysconfig/lsyncd:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">LSYNCD_OPTIONS</span><span class="o">=</span><span class="s2">&quot;-log scarce /etc/lsyncd.conf&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Опция &#8220;-log scarce&#8221; уменьшает уровень логирования.
+Теперь осталось добавить lsyncd в конфигурацию corosync:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>crm configure primitive lsyncd-node1 lsb:lsyncd op monitor interval="5" meta target-role="Started"
+</span><span class='line'>crm configure location loc-lsyncd-on-node1 lsyncd-node1 inf: node1</span></code></pre></td></tr></table></div></figure>
+
+
+<p>На втором сервере делаем соответствующие поправки.
+Вот в принципе и всё. Данное решение синхронизации хорошо себя показало на высоких нагрузках. Если есть вопросы, я постораюсь помочь.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Установка crm shell в Pacemaker]]></title>

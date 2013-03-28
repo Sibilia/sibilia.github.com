@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-26T15:54:50+03:00</updated>
+  <updated>2013-03-28T17:35:47+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -18,9 +18,11 @@
     <link href="http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/"/>
     <updated>2013-03-26T13:52:00+03:00</updated>
     <id>http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison</id>
-    <content type="html"><![CDATA[<p>Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из <a href="https://code.google.com/p/lsyncd/">lsyncd</a> и <a href="http://www.cis.upenn.edu/~bcpierce/unison/">unison</a>.
-Lsyncd - это демонб который слушает дерево каталогов и выполняет синхронизацию при событии (inotify или fsevents) в нём. Синхронизировать он может с помощью rsync или любым другим способом, который можно прописать у него в настройках в виде скрипта на Lua.
-Unison позволяет синхронизировать файлы между серверами (или локально два различных каталога). В отличие от rsync он позволяет синхронизировать файлы одновременно в обе стороны. В качестве транспорта при синхронизации может быть использован ssh.
+    <content type="html"><![CDATA[<p>Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из <a href="https://code.google.com/p/lsyncd/">lsyncd</a> и <a href="http://www.cis.upenn.edu/~bcpierce/unison/">unison</a>.</p>
+
+<p>Lsyncd - это демон который слушает дерево каталогов и выполняет синхронизацию при событии (inotify или fsevents) на нём. Синхронизировать он может с помощью rsync или любым другим способом, который можно прописать у него в настройках в виде скрипта на Lua.</p>
+
+<p>Unison позволяет синхронизировать файлы между серверами (или локально два различных каталога). В отличие от rsync он позволяет синхронизировать файлы одновременно в обе стороны. В качестве транспорта при синхронизации может быть использован ssh.
 Пример буду приводить для CentOS/RedHat, для .deb систем отличия в мелочах. Начнём с установки:</p>
 
 <!-- more -->

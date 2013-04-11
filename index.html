@@ -9,7 +9,8 @@
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из lsyncd и unison &hellip;">
+  <meta name="description" content="Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его: 1
+yum install ntp Далее разрешаем демону ntpd &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,76 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/">NTP - синхронизация времени</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-04-11T14:23:00+03:00" pubdate data-updated="true">Apr 11<span>th</span>, 2013</time>
+        
+         | <a href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install ntp</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Далее разрешаем демону ntpd устанавливать аппаратное время. Для этого в файле /etc/sysconfig/ntpd прописываем строку SYNC_HWCLOCK=yes :</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>echo SYNC_HWCLOCK=yes &gt;&gt; /etc/sysconfig/ntpd</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Запускаем демон ntpd и добавляем в автозагрузку:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/etc/init.d/ntpd start
+</span><span class='line'>chkconfig ntpd on
+</span><span class='line'>chkconfig --list ntpd</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Через некоторое время можно проверить статус синхронизации:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ntpstat
+</span><span class='line'>synchronised to NTP server (86.57.151.12) at stratum 5 
+</span><span class='line'>   time correct to within 570 ms
+</span><span class='line'>   polling server every 64 s</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -331,6 +402,10 @@ New drbd meta data block successfully created.
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/">NTP - синхронизация времени</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Синхронизация файлов с помощью Lsyncd и Unison</a>
       </li>
     
@@ -344,10 +419,6 @@ New drbd meta data block successfully created.
     
       <li class="post">
         <a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Установка и настройка Munin</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">Решение некоторых проблем в DRBD</a>
       </li>
     
   </ul>

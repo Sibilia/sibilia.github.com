@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-28T17:35:47+03:00</updated>
+  <updated>2013-04-11T14:43:13+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,37 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[NTP - синхронизация времени]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/"/>
+    <updated>2013-04-11T14:23:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni</id>
+    <content type="html"><![CDATA[<p>Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его:
+<code>
+yum install ntp
+</code>
+Далее разрешаем демону ntpd устанавливать аппаратное время. Для этого в файле /etc/sysconfig/ntpd прописываем строку SYNC_HWCLOCK=yes :
+<code>
+echo SYNC_HWCLOCK=yes &gt;&gt; /etc/sysconfig/ntpd
+</code>
+Запускаем демон ntpd и добавляем в автозагрузку:
+<code>
+/etc/init.d/ntpd start
+chkconfig ntpd on
+chkconfig --list ntpd
+</code>
+Через некоторое время можно проверить статус синхронизации:
+```</p>
+
+<h1>ntpstat</h1>
+
+<p>synchronised to NTP server (86.57.151.12) at stratum 5
+   time correct to within 570 ms
+   polling server every 64 s
+```</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Синхронизация файлов с помощью Lsyncd и Unison]]></title>
@@ -436,90 +467,6 @@ munin-node      0:off   1:off   2:on    3:on    4:on    5:on    6:off
 
 <p>На главном сервере Munin необходим Web сервер. В файле /etc/munin/munin.conf прописывается куда будут генерироваться итоговые .html
 Например для стандартных настроек достаточно просто в браузере перейти на ip адресс главного сервера munin: http://172.16.0.10/munin</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Решение некоторых проблем в DRBD]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/"/>
-    <updated>2013-01-29T14:39:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd</id>
-    <content type="html"><![CDATA[<p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
-
-<h3>DRBD Diskless</h3>
-
-<p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
-
-<pre><code># drbd-overview
-2:r2 Connected Secondary/Primary Diskless/UpToDate C r----
-</code></pre>
-
-<h4>Для решения этой проблемы необходимо сбросить мета данные:</h4>
-
-<p>На активной ноде необходимо отмонтировать раздел. Затем на неактивной ноде отключаем ресурс:</p>
-
-<pre><code># drbdadm down r2
-</code></pre>
-
-<p>Создаем заново блок мета-данных:</p>
-
-<pre><code># drbdadm create-md r2
- ...
-New drbd meta data block successfully created.
-</code></pre>
-
-<!-- more -->
-
-
-<p>Включаем ресурс обратно (должна начаться синхронизация):</p>
-
-<pre><code># drbdadm up r2
-# drbdadm connect r2
-# drbd-overview 
-2:r2 SyncTarget Secondary/Primary Inconsistent/UpToDate C r---- 
-[&gt;....................] sync'ed: 0.1% (31796/31796)M queue_delay: 0.0 ms 
-</code></pre>
-
-<p>Для изменения скорости синхронизации можно ввести:</p>
-
-<pre><code># drbdsetup /dev/drbd2 syncer -r 10M
-</code></pre>
-
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :
-```
-syncer {</p>
-
-<pre><code>rate 100M;
-</code></pre>
-
-<p>}
-```</p>
-
-<h3>DRBD Split-brain</h3>
-
-<p>Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:</p>
-
-<pre><code># drbd-overview
-3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
-
-<p>Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
-На secondary:</p>
-
-<pre><code># drbdadm disconnect just
-# drbdadm -- --discard-my-data connect just
-</code></pre>
-
-<p>На primary:</p>
-
-<pre><code># drbdadm connect just
-</code></pre>
-
-<p>После синхронизации (если она необходима) всё должно работать:</p>
-
-<pre><code># drbd-overview
-3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-03-28T17:35:47+03:00</updated>
+  <updated>2013-04-11T14:43:13+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,47 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[NTP - синхронизация времени]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/"/>
+    <updated>2013-04-11T14:23:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni</id>
+    <content type="html"><![CDATA[<p>Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>yum install ntp</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Далее разрешаем демону ntpd устанавливать аппаратное время. Для этого в файле /etc/sysconfig/ntpd прописываем строку SYNC_HWCLOCK=yes :</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>echo SYNC_HWCLOCK=yes &gt;&gt; /etc/sysconfig/ntpd</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Запускаем демон ntpd и добавляем в автозагрузку:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/etc/init.d/ntpd start
+</span><span class='line'>chkconfig ntpd on
+</span><span class='line'>chkconfig --list ntpd</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Через некоторое время можно проверить статус синхронизации:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ntpstat
+</span><span class='line'>synchronised to NTP server (86.57.151.12) at stratum 5 
+</span><span class='line'>   time correct to within 570 ms
+</span><span class='line'>   polling server every 64 s</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Синхронизация файлов с помощью Lsyncd и Unison]]></title>

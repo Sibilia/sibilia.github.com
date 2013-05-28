@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-04-13T21:40:12+03:00</updated>
+  <updated>2013-05-28T17:52:06+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,67 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[SSH трюки]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/"/>
+    <updated>2013-05-28T16:17:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/05/28/ssh-trick</id>
+    <content type="html"><![CDATA[<h3>Проксирование соединения</h3>
+
+<p>Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh доступ к серверу host-forw, с которого есть доступ к host-end. Тогда для удобства можно настроить проксирование ssh соединения. В результате, вместо последвательного подключения к host-forw -> host-end, можно будет подключаться сразу к host-end и соединение будет проксироваться через host-forw автоматически.
+Для этого, нужно дбавить в конфиг ssh (~/.ssh/config):
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ForwardAgent yes
+</span><span class='line'>Host host-end&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;pre>&lt;code>HostName host-end
+</span><span class='line'>Port 22
+</span><span class='line'>User admin
+</span><span class='line'>ProxyCommand ssh admin@host-forw nc %h %p
+</span><span class='line'>Compression yes
+</span><span class='line'>ForwardX11 no
+</span><span class='line'>&lt;/code>&lt;/pre>
+</span><span class='line'>
+</span><span class='line'>&lt;p></span></code></pre></td></tr></table></div></figure></notextile></div>
+Из примера видно, что можно все необходимые параметры прописать, а их кстати немало (man ssh_config).
+Теперь для подключения достаточно набрать:
+<code>
+ssh host-end
+</code></p>
+
+<h3>Просмотр сетевого трафика с удалённого сервера</h3>
+
+<p>На удалённом сервере зачастую есть сетевой сниффер tcpdump. Но снимать трафик на нём, затем переносить на свой комп для анализа в wireshark неудобно, намного проще направить поток с tcpdump сразу себе в wireshark:
+<code>
+ssh root@host-end -i eth0 -w - 'port !22' | wireshark -k -i -
+</code></p>
+
+<h3>Копирование файлов с удалённого сервера на другой, через локальный комп</h3>
+
+<p>Необходимо перекинуть файлы с одного сервера на другой, но они друг друга не видят. Тогда можем перекинуть с локального, котой их обоих видит:
+<code>
+ssh root@host1 "tar -cf - /dir-copy" | ssh root@host2 "tar -xf - /dir-past/"
+</code></p>
+
+<h3>Запуск локального скрипта на удалённом сервере</h3>
+
+<p><code>
+ssh -T user@host &lt; script.sh
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[NTP - синхронизация времени]]></title>
@@ -174,7 +235,7 @@ crm configure location loc-lsyncd-on-node1 lsyncd-node1 inf: node1
 
 
 <p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты "crmsh" и "pssh". Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
-Для CentOS 6 x86_64 достаточно следующее:
+Для CentOS 6 x86-64 достаточно следующее:
 <code>
 yum install pacemaker corosync
 cd /tmp
@@ -282,191 +343,6 @@ conntrack -D -p tcp --dport 80
 </code>
 Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
 В таком случае нет нужды использовать таблицу filter.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Установка и настройка Munin]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/"/>
-    <updated>2013-02-18T15:07:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin</id>
-    <content type="html"><![CDATA[<p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
-
-<!-- more -->
-
-
-<h3>Установка</h3>
-
-<p>Приведу пример установки клиента и сервера для CentOS/RHEL. Для Debian/Ubuntu всё почти аналогично.
-Для начала установим главный сервер:</p>
-
-<pre><code># yum install munin munin-node
-</code></pre>
-
-<p>Для клиентов необходим только munin-node:</p>
-
-<pre><code># yum install munin-node
-</code></pre>
-
-<h3>Настройка</h3>
-
-<p>Главный файл настройки сервера Munin /etc/munin/munin.conf. В нём необходимо прописать клиентов:
-```</p>
-
-<h1>a simple host tree</h1>
-
-<p>[node1]</p>
-
-<pre><code>address 172.16.0.12
-use_node_name yes
-</code></pre>
-
-<p>[node2]</p>
-
-<pre><code>address 172.16.0.13
-use_node_name yes
-</code></pre>
-
-<p>[bckp]</p>
-
-<pre><code>address 127.0.0.1
-use_node_name yes
-</code></pre>
-
-<p><code>
-Для настройки клиентов нам необходимо подправить /etc/munin/munin-node.conf:
-</code></p>
-
-<h1>Разрешаем подключаться серверу:</h1>
-
-<p>allow ^127.0.0.1$
-allow ^172.16.0.10$ # ip address bckp</p>
-
-<h1>указываем host name и ip</h1>
-
-<p>host_name node1
-host 172.16.0.12
-```
-Теперь включим парочку дополнительных плагинов:</p>
-
-<pre><code>ln -s /usr/share/munin/plugins/acpi /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat_ios /etc/munin/plugins/
-</code></pre>
-
-<p>Как видно из примера плагины подключаются созданием симлинка в /etc/munin/plugins/</p>
-
-<h5>Подключение плагинов для MongoDB</h5>
-
-<p>Плагины для MongoDB не идут в стандартной поставке, но их не сложно установить.</p>
-
-<pre><code># wget https://github.com/erh/mongo-munin/archive/master.zip -O /tmp/mongo-munin.zip
-# unzip /tmp/mongo-munin.zip /tmp/
-# mkdir -p /usr/local/share/munin/plugins
-# cp /tmp/mongo-munin-master/mongo_* /usr/local/share/munin/plugins/
-
-# ln -s /usr/local/share/munin/plugins/mongo_btree /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_conn /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_lock /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_mem /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_ops /etc/munin/plugins/
-</code></pre>
-
-<p>Не забываем перезагружать munin после правки конфигов и добавления/удаления плагинов.</p>
-
-<pre><code># /etc/init.d/munin-node restart
-</code></pre>
-
-<p>Можно проверить просто запустив один из скриптов. Первоначально у меня они не отрабатывали:</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-...
-  File "/usr/lib64/python2.6/json/decoder.py", line 319, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-  File "/usr/lib64/python2.6/json/decoder.py", line 338, in raw_decode
-    raise ValueError("No JSON object could be decoded")
-ValueError: No JSON object could be decoded
-</code></pre>
-
-<p>Подравив в скрипте вывод значения я выяснил в чём проблема...</p>
-
-<pre><code># vim /usr/local/share/munin/plugins/mongo_btree
-</code></pre>
-
-<p><code>
-28     raw = urllib2.urlopen(req).read()
-29     print raw
-30     return json.loads( raw )["serverStatus"]
-</code></p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-You are trying to access MongoDB on the native driver port. For http diagnostic access, add 1000 to the port number
-....
-</code></pre>
-
-<p>Сново правим скрипт не забыв удалить добавленную строчку на прошлом этапе.
-```</p>
-
-<pre><code>url = "http://%s:%d/_status" % (host, port+1000)
-</code></pre>
-
-<p>```
-Теперь всё в порядке.</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-missRatio.value 0
-resets.value 0
-hits.value 23325605
-misses.value 46
-accesses.value 23325651
-</code></pre>
-
-<p>Не забываем сделать соответствующие поправки в остальных скриптах mongo_</p>
-
-<h5>Подключение плагинов для MySQL</h5>
-
-<p>В стандартной поставке есть плагины для mysql, если нужно, подключаем и их:</p>
-
-<pre><code># ln -s /usr/share/munin/plugins/mysql_* /etc/munin/plugins
-</code></pre>
-
-<p>Для их работы необходимы дополнительные пакеты для perl:</p>
-
-<pre><code># yum install perl-Cache-Cache perl-DBD-MySQL perl-IPC-ShareLite
-</code></pre>
-
-<p>Если ещё чего не хватит, то это легко выяснить чтением логов /var/log/munin-node/munin-node.log.
-Создаём в mysql пользователя для munin:</p>
-
-<pre><code># mysql -u root -p -e 'create user munin'
-</code></pre>
-
-<p>Подправим файл /etc/munin/plugin-conf.d/munin-node:</p>
-
-<pre><code>[mysql*]
-    user root
-    env.mysqlopts --defaults-file=/etc/mysql/my.cnf
-    env.mysqluser munin
-</code></pre>
-
-<h5>Добавление в автозагрузку</h5>
-
-<p>Добавить в автозагрузку не сложно. Необходимо выполнить на каждом сервере:</p>
-
-<pre><code># chkconfig --add munin-node
-# chkconfig munin-node on
-</code></pre>
-
-<p>Проверяем:</p>
-
-<pre><code># chkconfig --list munin-node
-munin-node      0:off   1:off   2:on    3:on    4:on    5:on    6:off
-</code></pre>
-
-<h5>Использование.</h5>
-
-<p>На главном сервере Munin необходим Web сервер. В файле /etc/munin/munin.conf прописывается куда будут генерироваться итоговые .html
-Например для стандартных настроек достаточно просто в браузере перейти на ip адресс главного сервера munin: http://172.16.0.10/munin</p>
 ]]></content>
   </entry>
   

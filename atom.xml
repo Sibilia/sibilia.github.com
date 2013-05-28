@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-04-13T21:40:12+03:00</updated>
+  <updated>2013-05-28T17:52:06+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,65 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[SSH трюки]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/"/>
+    <updated>2013-05-28T16:17:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/05/28/ssh-trick</id>
+    <content type="html"><![CDATA[<h3>Проксирование соединения</h3>
+
+<p>Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh доступ к серверу host-forw, с которого есть доступ к host-end. Тогда для удобства можно настроить проксирование ssh соединения. В результате, вместо последвательного подключения к host-forw -> host-end, можно будет подключаться сразу к host-end и соединение будет проксироваться через host-forw автоматически.
+Для этого, нужно дбавить в конфиг ssh (~/.ssh/config):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ForwardAgent yes
+</span><span class='line'>Host host-end
+</span><span class='line'>    HostName host-end
+</span><span class='line'>    Port 22
+</span><span class='line'>    User admin
+</span><span class='line'>    ProxyCommand ssh admin@host-forw nc %h %p
+</span><span class='line'>    Compression yes
+</span><span class='line'>    ForwardX11 no</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Из примера видно, что можно все необходимые параметры прописать, а их кстати немало (man ssh_config).
+Теперь для подключения достаточно набрать:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh host-end</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Просмотр сетевого трафика с удалённого сервера</h3>
+
+<p>На удалённом сервере зачастую есть сетевой сниффер tcpdump. Но снимать трафик на нём, затем переносить на свой комп для анализа в wireshark неудобно, намного проще направить поток с tcpdump сразу себе в wireshark:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host-end -i eth0 -w - 'port !22' | wireshark -k -i -</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Копирование файлов с удалённого сервера на другой, через локальный комп</h3>
+
+<p>Необходимо перекинуть файлы с одного сервера на другой, но они друг друга не видят. Тогда можем перекинуть с локального, котой их обоих видит:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host1 "tar -cf - /dir-copy" | ssh root@host2 "tar -xf - /dir-past/"</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Запуск локального скрипта на удалённом сервере</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh -T user@host &lt; script.sh</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[NTP - синхронизация времени]]></title>
@@ -183,7 +242,7 @@
 
 
 <p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты &#8220;crmsh&#8221; и &#8220;pssh&#8221;. Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
-Для CentOS 6 x86_64 достаточно следующее:</p>
+Для CentOS 6 x86-64 достаточно следующее:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>

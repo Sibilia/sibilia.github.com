@@ -9,8 +9,7 @@
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его: 1
-yum install ntp Далее разрешаем демону ntpd &hellip;">
+  <meta name="description" content="Проксирование соединения Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +64,94 @@ yum install ntp Далее разрешаем демону ntpd &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/05/28/ssh-trick/">SSH трюки</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-28T16:17:00+03:00" pubdate data-updated="true">May 28<span>th</span>, 2013</time>
+        
+         | <a href="/blog/2013/05/28/ssh-trick/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>Проксирование соединения</h3>
+
+<p>Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh доступ к серверу host-forw, с которого есть доступ к host-end. Тогда для удобства можно настроить проксирование ssh соединения. В результате, вместо последвательного подключения к host-forw -> host-end, можно будет подключаться сразу к host-end и соединение будет проксироваться через host-forw автоматически.
+Для этого, нужно дбавить в конфиг ssh (~/.ssh/config):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ForwardAgent yes
+</span><span class='line'>Host host-end
+</span><span class='line'>    HostName host-end
+</span><span class='line'>    Port 22
+</span><span class='line'>    User admin
+</span><span class='line'>    ProxyCommand ssh admin@host-forw nc %h %p
+</span><span class='line'>    Compression yes
+</span><span class='line'>    ForwardX11 no</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Из примера видно, что можно все необходимые параметры прописать, а их кстати немало (man ssh_config).
+Теперь для подключения достаточно набрать:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh host-end</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Просмотр сетевого трафика с удалённого сервера</h3>
+
+<p>На удалённом сервере зачастую есть сетевой сниффер tcpdump. Но снимать трафик на нём, затем переносить на свой комп для анализа в wireshark неудобно, намного проще направить поток с tcpdump сразу себе в wireshark:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host-end -i eth0 -w - 'port !22' | wireshark -k -i -</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Копирование файлов с удалённого сервера на другой, через локальный комп</h3>
+
+<p>Необходимо перекинуть файлы с одного сервера на другой, но они друг друга не видят. Тогда можем перекинуть с локального, котой их обоих видит:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host1 "tar -cf - /dir-copy" | ssh root@host2 "tar -xf - /dir-past/"</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Запуск локального скрипта на удалённом сервере</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh -T user@host &lt; script.sh</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -402,6 +489,10 @@ New drbd meta data block successfully created.
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/05/28/ssh-trick/">SSH трюки</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/">NTP - синхронизация времени</a>
       </li>
     
@@ -415,10 +506,6 @@ New drbd meta data block successfully created.
     
       <li class="post">
         <a href="/blog/2013/03/04/pierienapravlieniie-http/">Перенаправление http</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/02/18/ustanovka-i-nastroika-munin/">Установка и настройка Munin</a>
       </li>
     
   </ul>

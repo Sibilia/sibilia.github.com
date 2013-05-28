@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Решение некоторых проблем в DRBD - Sibilia octopress blog</title>
+  <title>SSH трюки - Sibilia octopress blog</title>
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain. DRBD Diskless При выходе из строя дискового массива и его восстановления можно &hellip;">
+  <meta name="description" content="Проксирование соединения Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">
+  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -67,7 +67,7 @@
   
   <header>
     
-      <h1 class="entry-title">Решение некоторых проблем в DRBD</h1>
+      <h1 class="entry-title">SSH трюки</h1>
     
     
       <p class="meta">
@@ -83,7 +83,7 @@
   
 
 
-<time datetime="2013-01-29T14:39:00+03:00" pubdate data-updated="true">Jan 29<span>th</span>, 2013</time>
+<time datetime="2013-05-28T16:17:00+03:00" pubdate data-updated="true">May 28<span>th</span>, 2013</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -92,82 +92,57 @@
   </header>
 
 
-<div class="entry-content"><p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
+<div class="entry-content"><h3>Проксирование соединения</h3>
 
-<h3>DRBD Diskless</h3>
-
-<p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
-
-<pre><code># drbd-overview
-2:r2 Connected Secondary/Primary Diskless/UpToDate C r----
-</code></pre>
-
-<h4>Для решения этой проблемы необходимо сбросить мета данные:</h4>
-
-<p>На активной ноде необходимо отмонтировать раздел. Затем на неактивной ноде отключаем ресурс:</p>
-
-<pre><code># drbdadm down r2
-</code></pre>
-
-<p>Создаем заново блок мета-данных:</p>
-
-<pre><code># drbdadm create-md r2
- ...
-New drbd meta data block successfully created.
-</code></pre>
-
-<!-- more -->
-
-
-<p>Включаем ресурс обратно (должна начаться синхронизация):</p>
-
-<pre><code># drbdadm up r2
-# drbdadm connect r2
-# drbd-overview 
-2:r2 SyncTarget Secondary/Primary Inconsistent/UpToDate C r---- 
-[&gt;....................] sync'ed: 0.1% (31796/31796)M queue_delay: 0.0 ms 
-</code></pre>
-
-<p>Для изменения скорости синхронизации можно ввести:</p>
-
-<pre><code># drbdsetup /dev/drbd2 syncer -r 10M
-</code></pre>
-
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :</p>
+<p>Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh доступ к серверу host-forw, с которого есть доступ к host-end. Тогда для удобства можно настроить проксирование ssh соединения. В результате, вместо последвательного подключения к host-forw -> host-end, можно будет подключаться сразу к host-end и соединение будет проксироваться через host-forw автоматически.
+Для этого, нужно дбавить в конфиг ssh (~/.ssh/config):</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>syncer {
-</span><span class='line'>  rate 100M;
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ForwardAgent yes
+</span><span class='line'>Host host-end
+</span><span class='line'>    HostName host-end
+</span><span class='line'>    Port 22
+</span><span class='line'>    User admin
+</span><span class='line'>    ProxyCommand ssh admin@host-forw nc %h %p
+</span><span class='line'>    Compression yes
+</span><span class='line'>    ForwardX11 no</span></code></pre></td></tr></table></div></figure>
 
 
-<h3>DRBD Split-brain</h3>
+<p>Из примера видно, что можно все необходимые параметры прописать, а их кстати немало (man ssh_config).
+Теперь для подключения достаточно набрать:</p>
 
-<p>Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh host-end</span></code></pre></td></tr></table></div></figure>
 
-<pre><code># drbd-overview
-3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
 
-<p>Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
-На secondary:</p>
+<h3>Просмотр сетевого трафика с удалённого сервера</h3>
 
-<pre><code># drbdadm disconnect just
-# drbdadm -- --discard-my-data connect just
-</code></pre>
+<p>На удалённом сервере зачастую есть сетевой сниффер tcpdump. Но снимать трафик на нём, затем переносить на свой комп для анализа в wireshark неудобно, намного проще направить поток с tcpdump сразу себе в wireshark:</p>
 
-<p>На primary:</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host-end -i eth0 -w - 'port !22' | wireshark -k -i -</span></code></pre></td></tr></table></div></figure>
 
-<pre><code># drbdadm connect just
-</code></pre>
 
-<p>После синхронизации (если она необходима) всё должно работать:</p>
+<h3>Копирование файлов с удалённого сервера на другой, через локальный комп</h3>
 
-<pre><code># drbd-overview
-3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
+<p>Необходимо перекинуть файлы с одного сервера на другой, но они друг друга не видят. Тогда можем перекинуть с локального, котой их обоих видит:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host1 "tar -cf - /dir-copy" | ssh root@host2 "tar -xf - /dir-past/"</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Запуск локального скрипта на удалённом сервере</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh -T user@host &lt; script.sh</span></code></pre></td></tr></table></div></figure>
+
 </div>
 
 
@@ -190,12 +165,12 @@ New drbd meta data block successfully created.
   
 
 
-<time datetime="2013-01-29T14:39:00+03:00" pubdate data-updated="true">Jan 29<span>th</span>, 2013</time>
+<time datetime="2013-05-28T16:17:00+03:00" pubdate data-updated="true">May 28<span>th</span>, 2013</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/cluster/'>cluster</a>, <a class='category' href='/blog/categories/drbd/'>drbd</a>, <a class='category' href='/blog/categories/linux/'>linux</a>
+    <a class='category' href='/blog/categories/linux/'>linux</a>
   
 </span>
 
@@ -204,7 +179,7 @@ New drbd meta data block successfully created.
     
       <div class="sharing">
   
-  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/" >Tweet</a>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/" >Tweet</a>
   
   
   <div class="g-plusone" data-size="medium"></div>
@@ -215,8 +190,8 @@ New drbd meta data block successfully created.
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/" title="Previous Post: NTP - синхронизация времени">&laquo; NTP - синхронизация времени</a>
       
-        <a class="basic-alignment right" href="/blog/2013/02/18/ustanovka-i-nastroika-munin/" title="Next Post: Установка и настройка Munin">Установка и настройка Munin &raquo;</a>
       
     </p>
   </footer>
@@ -321,8 +296,8 @@ New drbd meta data block successfully created.
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/';
-        var disqus_url = 'http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/';
+        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/05/28/ssh-trick/';
+        var disqus_url = 'http://Sibilia.github.com/blog/2013/05/28/ssh-trick/';
         var disqus_script = 'embed.js';
       
     (function () {

@@ -1,24 +1,98 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Sibilia octopress blog]]></title>
-  <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
-  <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-20T19:31:46+03:00</updated>
-  <id>http://Sibilia.github.com/</id>
-  <author>
-    <name><![CDATA[Ilia Sibiryatkin]]></name>
-    
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Установка и настройка Pacemaker - Sibilia octopress blog</title>
+  <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <entry>
-    <title type="html"><![CDATA[Установка и настройка Pacemaker]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/"/>
-    <updated>2013-06-20T12:41:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker</id>
-    <content type="html"><![CDATA[<p>Для построения кластеров high availability (высокой доступности) я в своей работе использую <a href="http://clusterlabs.org/">Pacemaker</a>. Он себя хорошо зарекомендовал на многих проектах, очень гибкий, динамически развивается. Здесь я приведу краткую инструкцию себе на память по его установке и начальной настройке. Я не претендую на полноту изложения, за этим лучше идти в официальную <a href="http://clusterlabs.org/doc/">документацию</a>, благо она неплохо написана. Используемый дистрибутив CentOS 6. Пример будет описан на двух однотипных серверах.</p>
+  <meta name="description" content="Для построения кластеров high availability (высокой доступности) я в своей работе использую Pacemaker. Он себя хорошо зарекомендовал на многих &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Sibilia octopress blog" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Sibilia octopress blog</a></h1>
+  
+    <h2>notes on memory.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:Sibilia.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Установка и настройка Pacemaker</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-20T12:41:00+03:00" pubdate data-updated="true">Jun 20<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Для построения кластеров high availability (высокой доступности) я в своей работе использую <a href="http://clusterlabs.org/">Pacemaker</a>. Он себя хорошо зарекомендовал на многих проектах, очень гибкий, динамически развивается. Здесь я приведу краткую инструкцию себе на память по его установке и начальной настройке. Я не претендую на полноту изложения, за этим лучше идти в официальную <a href="http://clusterlabs.org/doc/">документацию</a>, благо она неплохо написана. Используемый дистрибутив CentOS 6. Пример будет описан на двух однотипных серверах.</p>
 
 <!--more-->
 
@@ -787,649 +861,197 @@
 <h3>P.S.</h3>
 
 <p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размешение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях, или пишите на почту.</p>
-]]></content>
-  </entry>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
   
-  <entry>
-    <title type="html"><![CDATA[SSH трюки]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/05/28/ssh-trick/"/>
-    <updated>2013-05-28T16:17:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/05/28/ssh-trick</id>
-    <content type="html"><![CDATA[<h3>Проксирование соединения</h3>
 
-<p>Допустим у вас есть необходимость подключаться к удалённому серверу host-end, к которому прямого доступа нет, и есть ssh доступ к серверу host-forw, с которого есть доступ к host-end. Тогда для удобства можно настроить проксирование ssh соединения. В результате, вместо последвательного подключения к host-forw -> host-end, можно будет подключаться сразу к host-end и соединение будет проксироваться через host-forw автоматически.
-Для этого, нужно дбавить в конфиг ssh (~/.ssh/config):</p>
+<span class="byline author vcard">Posted by <span class="fn">Ilia Sibiryatkin</span></span>
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ForwardAgent yes
-</span><span class='line'>Host host-end
-</span><span class='line'>    HostName host-end
-</span><span class='line'>    Port 22
-</span><span class='line'>    User admin
-</span><span class='line'>    ProxyCommand ssh admin@host-forw nc %h %p
-</span><span class='line'>    Compression yes
-</span><span class='line'>    ForwardX11 no</span></code></pre></td></tr></table></div></figure>
+      
 
 
-<p>Из примера видно, что можно все необходимые параметры прописать, а их кстати немало (man ssh_config).
-Теперь для подключения достаточно набрать:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ssh host-end</span></code></pre></td></tr></table></div></figure>
 
 
-<h3>Просмотр сетевого трафика с удалённого сервера</h3>
-
-<p>На удалённом сервере зачастую есть сетевой сниффер tcpdump. Но снимать трафик на нём, затем переносить на свой комп для анализа в wireshark неудобно, намного проще направить поток с tcpdump сразу себе в wireshark:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host-end -i eth0 -w - 'port !22' | wireshark -k -i -</span></code></pre></td></tr></table></div></figure>
 
 
-<h3>Копирование файлов с удалённого сервера на другой, через локальный комп</h3>
-
-<p>Необходимо перекинуть файлы с одного сервера на другой, но они друг друга не видят. Тогда можем перекинуть с локального, котой их обоих видит:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ssh root@host1 "tar -cf - /dir-copy" | ssh root@host2 "tar -xf - /dir-past/"</span></code></pre></td></tr></table></div></figure>
 
 
-<h3>Запуск локального скрипта на удалённом сервере</h3>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ssh -T user@host &lt; script.sh</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
   
-  <entry>
-    <title type="html"><![CDATA[NTP - синхронизация времени]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/"/>
-    <updated>2013-04-11T14:23:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni</id>
-    <content type="html"><![CDATA[<p>Настроить синхронизацию времени в CentOS не сложно. Для этого нам понадобится NTP. Устанавливаем его:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>yum install ntp</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Далее разрешаем демону ntpd устанавливать аппаратное время. Для этого в файле /etc/sysconfig/ntpd прописываем строку SYNC_HWCLOCK=yes :</p>
+<time datetime="2013-06-20T12:41:00+03:00" pubdate data-updated="true">Jun 20<span>th</span>, 2013</time>
+      
 
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>echo SYNC_HWCLOCK=yes &gt;&gt; /etc/sysconfig/ntpd</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Запускаем демон ntpd и добавляем в автозагрузку:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>/etc/init.d/ntpd start
-</span><span class='line'>chkconfig ntpd on
-</span><span class='line'>chkconfig --list ntpd</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Через некоторое время можно проверить статус синхронизации:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># ntpstat
-</span><span class='line'>synchronised to NTP server (86.57.151.12) at stratum 5 
-</span><span class='line'>   time correct to within 570 ms
-</span><span class='line'>   polling server every 64 s</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
+<span class="categories">
   
-  <entry>
-    <title type="html"><![CDATA[Синхронизация файлов с помощью Lsyncd и Unison]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/"/>
-    <updated>2013-03-26T13:52:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison</id>
-    <content type="html"><![CDATA[<p>Для быстрой синхронизации файлов между двумя серверами, когда изменения могут появиться на любом из них, прекрасно подходит связка из <a href="https://code.google.com/p/lsyncd/">lsyncd</a> и <a href="http://www.cis.upenn.edu/~bcpierce/unison/">unison</a>.</p>
-
-<p>Lsyncd - это демон который слушает дерево каталогов и выполняет синхронизацию при событии (inotify или fsevents) на нём. Синхронизировать он может с помощью rsync или любым другим способом, который можно прописать у него в настройках в виде скрипта на Lua.</p>
-
-<p>Unison позволяет синхронизировать файлы между серверами (или локально два различных каталога). В отличие от rsync он позволяет синхронизировать файлы одновременно в обе стороны. В качестве транспорта при синхронизации может быть использован ssh.
-Пример буду приводить для CentOS/RedHat, для .deb систем отличия в мелочах. Начнём с установки:</p>
-
-<!-- more -->
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>yum install lsyncd unison</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Далее правим конфигурационный файл lsyncd: /etc/lsyncd.conf</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>settings <span class="o">{</span>
-</span><span class='line'>        <span class="nv">logfile</span>         <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced.lsync.log&quot;</span>,
-</span><span class='line'>        <span class="nv">statusFile</span>      <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced.lsync.status&quot;</span>,
-</span><span class='line'>        <span class="nv">statusInterval</span>  <span class="o">=</span> 10,
-</span><span class='line'>        <span class="nv">maxDelays</span>       <span class="o">=</span> 3,
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="nv">runUnison</span> <span class="o">=</span> <span class="o">[[</span>/usr/bin/unison -retry 5 -owner -group -batch /mnt/lsynced ssh://node2//mnt/lsynced<span class="o">]]</span>
-</span><span class='line'>
-</span><span class='line'><span class="nv">runbash</span> <span class="o">=</span> <span class="o">{</span>
-</span><span class='line'>        <span class="nv">onCreate</span> <span class="o">=</span> runUnison,
-</span><span class='line'>        <span class="nv">onDelete</span> <span class="o">=</span> runUnison,
-</span><span class='line'>        <span class="nv">onModify</span> <span class="o">=</span> runUnison,
-</span><span class='line'>        <span class="nv">onMove</span> <span class="o">=</span> runUnison,
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>sync <span class="o">{</span>
-</span><span class='line'>        runbash,
-</span><span class='line'>        <span class="nv">maxProcesses</span> <span class="o">=</span> 1,
-</span><span class='line'>        <span class="nv">delay</span> <span class="o">=</span> 3,
-</span><span class='line'>        <span class="nb">source</span> <span class="o">=</span> <span class="s2">&quot;/mnt/lsynced&quot;</span>,
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>На втором сервере меняем имя хоста в строке вызова unison. Проверить можно запустив lsyncd в режиме nodaemon (или без этой опции и читать логи):</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>lsyncd -nodaemon /etc/lsyncd.conf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Если всё отлично завершаем и переходим к настройке запуска lsyncd под corosync.
-Тут есть два способа: использовать lsb ресурс corosync или написать свой ресурс агент. Я рассмотрю первый вариант. Для второго у меня на github лежит ресурс агент, но я его ещё не до конца протестировал.</p>
-
-<h3>Corosync lsyncd LSB ресурс.</h3>
-
-<p>Нам понадобится скрипт lsyncd daemon: /etc/init.d/lsyncd. Он должен входить в пакет lsyncd начиная с версии 2.1. Учитывая один момент в нём:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">LSYNCD_OPTIONS</span><span class="o">=</span><span class="s2">&quot;-pidfile /var/run/lsyncd.pid /etc/lsyncd.conf&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="o">[</span> -e /etc/sysconfig/lsyncd <span class="o">]</span>; <span class="k">then</span>
-</span><span class='line'>  . /etc/sysconfig/lsyncd
-</span><span class='line'><span class="k">fi</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>нам обязательно надо прописать опции запуска в файле /etc/sysconfig/lsyncd:</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">LSYNCD_OPTIONS</span><span class="o">=</span><span class="s2">&quot;-log scarce /etc/lsyncd.conf&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Опция &#8220;-log scarce&#8221; уменьшает уровень логирования.
-Теперь осталось добавить lsyncd в конфигурацию corosync:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>crm configure primitive lsyncd-node1 lsb:lsyncd op monitor interval="5" meta target-role="Started"
-</span><span class='line'>crm configure location loc-lsyncd-on-node1 lsyncd-node1 inf: node1</span></code></pre></td></tr></table></div></figure>
-
-
-<p>На втором сервере делаем соответствующие поправки.
-Вот в принципе и всё. Данное решение синхронизации хорошо себя показало на высоких нагрузках. Если есть вопросы, я постораюсь помочь.</p>
-]]></content>
-  </entry>
+    <a class='category' href='/blog/categories/cluster/'>cluster</a>, <a class='category' href='/blog/categories/linux/'>linux</a>
   
-  <entry>
-    <title type="html"><![CDATA[Установка crm shell в Pacemaker]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/"/>
-    <updated>2013-03-14T14:36:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker</id>
-    <content type="html"><![CDATA[<p>В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7.</p>
-
-<blockquote><p>Since late-April, the crm shell is no longer included in the Pacemaker source tree. This change was made at the author&#8217;s request as it is now maintained as a separate project.</p><footer><strong>ClusterLabs</strong> <cite><a href='https://github.com/ClusterLabs/pacemaker#important-information-about-the-crm-shell'>Important Information About the Crm Shell</a></cite></footer></blockquote>
+</span>
 
 
-<!-- more -->
-
-
-<p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты &#8220;crmsh&#8221; и &#8220;pssh&#8221;. Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
-Для CentOS 6 x86-64 достаточно следующее:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>yum install pacemaker corosync
-</span><span class='line'>cd /tmp
-</span><span class='line'>wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/crmsh-1.2.5-55.2.x86_64.rpm
-</span><span class='line'>wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/pssh-2.3.1-15.1.x86_64.rpm
-</span><span class='line'>yum install ./crmsh*.rpm ./pssh*.rpm</span></code></pre></td></tr></table></div></figure>
-
-
-<p>На данный момент пакетов crmsh и pssh отсутствуют в официальных репозитариях RedHat/CentOS и в EPEL. Быть может в скором времени их туда добавят, или clusterlabs уладят совместимость.</p>
-
-<h3>P.S.</h3>
-
-<p>Вот кстати мой скрипт для отчистки failcount в выводе crm_mon -fnr. Это порой необходимо для востановления кластера после сбоя и обнуления счётчиков.</p>
-
-<figure class='code'><figcaption><span> (corosync_clear)</span> <a href='http://Sibilia.github.com/downloads/code/corosync_clear'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
-</span><span class='line'><span class="c"># Если значение failcount=1000000 у ресурса, то сбрасывается его состояние (crm resource cleanup &lt;res&gt;).</span>
-</span><span class='line'><span class="c">#</span>
-</span><span class='line'><span class="c"># Author: Ilia Sibiryatkin &lt;Sibvilian@gmail.com&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="nv">NODE</span><span class="o">=</span><span class="sb">`</span>crm_node -l |cut -d<span class="s1">&#39; &#39;</span> -f 2<span class="sb">`</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">for </span>STR in <span class="k">$(</span>crm_mon -f1 | grep fail-count| awk <span class="s1">&#39;{ print $1 &quot;@&quot; $3 }&#39;</span><span class="k">)</span> ; <span class="k">do</span>
-</span><span class='line'><span class="k">  </span><span class="nv">RES</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($1,0,length($1)-1))}&#39;</span><span class="k">)</span>
-</span><span class='line'>        <span class="nv">FAIL</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($2,12,length($2)))}&#39;</span><span class="k">)</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="k">if</span> <span class="o">[[</span> <span class="nv">$FAIL</span> <span class="o">==</span> 1000000 <span class="o">]]</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;cleanup $RES&quot;</span>
-</span><span class='line'>                crm resource cleanup <span class="nv">$RES</span>
-</span><span class='line'>        <span class="k">else</span>
-</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;clear fail-count $RES&quot;</span>
-</span><span class='line'>                <span class="k">for </span>i in <span class="nv">$NODE</span> ; <span class="k">do</span>
-</span><span class='line'><span class="k">                        </span>crm resource failcount <span class="nv">$RES</span> delete <span class="nv">$i</span>
-</span><span class='line'>                <span class="k">done </span>
-</span><span class='line'><span class="k">        fi</span>
-</span><span class='line'><span class="k">done</span>
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
+    </p>
+    
+      <div class="sharing">
   
-  <entry>
-    <title type="html"><![CDATA[Перенаправление http]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/"/>
-    <updated>2013-03-04T13:53:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http</id>
-    <content type="html"><![CDATA[<p>Возникла необходимость по наступлению определённого события временно перенаправлять http соединения на другой порт, где слушает nginx с заглушкой. Это легко можно сделать с помошью парочки правил в iptables. Приведу несколько основных моментов из bash скрипта.
-Нам нужны две таблицы в новой цепочке: &#8220;nat&#8221; для непосредственно перенаправления и &#8220;filter&#8221; для сброса активных сессий. Фильтровать активные сессии необходимо потому, что в таблицу &#8220;nat&#8221;, цепочки PREROUTING, поподают лишь tcp соединения с состоянием NEW. Активные tcp соединения живут примерно 2-3 минуты. Если это не критично, то можно обойтись без их фильтрации. Для этого просто не добавляем все правила в которых указана таблица &#8220;filter&#8221;.
-Для начала создадим новую цепочку. Это удобно тем что её можно очистить полностью, когда необходимо вернуть всё к изначальному состоянию.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -N HTTP_REDIR
-</span><span class='line'>iptables -t filter -N HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
-
-
-<!-- more -->
-
-
-<p>Теперь создадим два правила в цепочках PREROUTING и INPUT в которых будем направлять tcp в нашу цепочку. Эти правила не будут удаляться.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -I PREROUTING -p tcp -j HTTP_REDIR
-</span><span class='line'>iptables -t filter -I INPUT -p tcp -j HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Теперь, если нам необходимо включить перенаправление, то добавляем правила в нашу цепочку:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -A HTTP_REDIR -p tcp --dport 80 -j REDIRECT --to-port 20302
-</span><span class='line'>iptables -t filter -A HTTP_REDIR -p tcp --dport 80 -j REJECT --reject-with tcp-reset</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Если необходимо перенаправлять к примеру ещё и https то можно вместо &#8220;&#8211;dport 80&#8221; указать &#8220;-m multiport &#8211;dports 80,443&#8221;
-Чтобы убрать перенаправление, просто чистим нашу цепочку.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>iptables -t nat -F HTTP_REDIR
-</span><span class='line'>iptables -t filter -F HTTP_REDIR</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
-
-<h4>P.S.</h4>
-
-<p>Нашел более удобный способ сброса активный tcp соединений - conntrack.
-Пакет называется по разному, в Debian вроде просто conntrack, в CentOS/RedHat conntrack-tool.
-После установки, у нас появляется возможность удобно посмотреть активные соединения и их статус:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>conntrack -L -p tcp --dport 80</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Так же удобно их разом очистить:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>conntrack -D -p tcp --dport 80</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
-В таком случае нет нужды использовать таблицу filter.</p>
-]]></content>
-  </entry>
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/" data-via="" data-counturl="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/" >Tweet</a>
   
-  <entry>
-    <title type="html"><![CDATA[Установка и настройка Munin]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin/"/>
-    <updated>2013-02-18T15:07:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/02/18/ustanovka-i-nastroika-munin</id>
-    <content type="html"><![CDATA[<p><a href="http://munin-monitoring.org/">Munin</a> - Это мощная клиент-серверная система мониторинга параметров серверов. Главный сервер munin запускается по cron и опрашивает munin-node сервера собирая с них данные и рисует красивые и наглядные графики. На munin-node серверах демон при подключении главного сервера запускает скрипты плагинов из /etc/munin/plugins/. Плагинов в стандартной установке большое количество. Можно написать и свои.</p>
-
-<!-- more -->
-
-
-<h3>Установка</h3>
-
-<p>Приведу пример установки клиента и сервера для CentOS/RHEL. Для Debian/Ubuntu всё почти аналогично.
-Для начала установим главный сервер:</p>
-
-<pre><code># yum install munin munin-node
-</code></pre>
-
-<p>Для клиентов необходим только munin-node:</p>
-
-<pre><code># yum install munin-node
-</code></pre>
-
-<h3>Настройка</h3>
-
-<p>Главный файл настройки сервера Munin /etc/munin/munin.conf. В нём необходимо прописать клиентов:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># a simple host tree
-</span><span class='line'>[node1]
-</span><span class='line'>  address 172.16.0.12
-</span><span class='line'>  use_node_name yes
-</span><span class='line'>
-</span><span class='line'>[node2]
-</span><span class='line'>  address 172.16.0.13
-</span><span class='line'>    use_node_name yes
-</span><span class='line'>
-</span><span class='line'>[bckp]
-</span><span class='line'>    address 127.0.0.1
-</span><span class='line'>    use_node_name yes</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Для настройки клиентов нам необходимо подправить /etc/munin/munin-node.conf:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># Разрешаем подключаться серверу:
-</span><span class='line'>allow ^127\.0\.0\.1$
-</span><span class='line'>allow ^172\.16\.0\.10$ # ip address bckp 
-</span><span class='line'>
-</span><span class='line'># указываем host name и ip
-</span><span class='line'>host_name node1
-</span><span class='line'>host 172.16.0.12</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Теперь включим парочку дополнительных плагинов:</p>
-
-<pre><code>ln -s /usr/share/munin/plugins/acpi /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat /etc/munin/plugins/
-ln -s /usr/share/munin/plugins/iostat_ios /etc/munin/plugins/
-</code></pre>
-
-<p>Как видно из примера плагины подключаются созданием симлинка в /etc/munin/plugins/</p>
-
-<h5>Подключение плагинов для MongoDB</h5>
-
-<p>Плагины для MongoDB не идут в стандартной поставке, но их не сложно установить.</p>
-
-<pre><code># wget https://github.com/erh/mongo-munin/archive/master.zip -O /tmp/mongo-munin.zip
-# unzip /tmp/mongo-munin.zip /tmp/
-# mkdir -p /usr/local/share/munin/plugins
-# cp /tmp/mongo-munin-master/mongo_* /usr/local/share/munin/plugins/
-
-# ln -s /usr/local/share/munin/plugins/mongo_btree /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_conn /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_lock /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_mem /etc/munin/plugins/
-# ln -s /usr/local/share/munin/plugins/mongo_ops /etc/munin/plugins/
-</code></pre>
-
-<p>Не забываем перезагружать munin после правки конфигов и добавления/удаления плагинов.</p>
-
-<pre><code># /etc/init.d/munin-node restart
-</code></pre>
-
-<p>Можно проверить просто запустив один из скриптов. Первоначально у меня они не отрабатывали:</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-...
-  File "/usr/lib64/python2.6/json/decoder.py", line 319, in decode
-    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
-  File "/usr/lib64/python2.6/json/decoder.py", line 338, in raw_decode
-    raise ValueError("No JSON object could be decoded")
-ValueError: No JSON object could be decoded
-</code></pre>
-
-<p>Подравив в скрипте вывод значения я выяснил в чём проблема&#8230;</p>
-
-<pre><code># vim /usr/local/share/munin/plugins/mongo_btree
-</code></pre>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>28     raw = urllib2.urlopen(req).read()
-</span><span class='line'>29     print raw
-</span><span class='line'>30     return json.loads( raw )["serverStatus"]</span></code></pre></td></tr></table></div></figure>
-
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-You are trying to access MongoDB on the native driver port. For http diagnostic access, add 1000 to the port number
-....
-</code></pre>
-
-<p>Сново правим скрипт не забыв удалить добавленную строчку на прошлом этапе.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>url = "http://%s:%d/_status" % (host, port+1000)</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Теперь всё в порядке.</p>
-
-<pre><code># /usr/local/share/munin/plugins/mongo_btree
-missRatio.value 0
-resets.value 0
-hits.value 23325605
-misses.value 46
-accesses.value 23325651
-</code></pre>
-
-<p>Не забываем сделать соответствующие поправки в остальных скриптах mongo_</p>
-
-<h5>Подключение плагинов для MySQL</h5>
-
-<p>В стандартной поставке есть плагины для mysql, если нужно, подключаем и их:</p>
-
-<pre><code># ln -s /usr/share/munin/plugins/mysql_* /etc/munin/plugins
-</code></pre>
-
-<p>Для их работы необходимы дополнительные пакеты для perl:</p>
-
-<pre><code># yum install perl-Cache-Cache perl-DBD-MySQL perl-IPC-ShareLite
-</code></pre>
-
-<p>Если ещё чего не хватит, то это легко выяснить чтением логов /var/log/munin-node/munin-node.log.
-Создаём в mysql пользователя для munin:</p>
-
-<pre><code># mysql -u root -p -e 'create user munin'
-</code></pre>
-
-<p>Подправим файл /etc/munin/plugin-conf.d/munin-node:</p>
-
-<pre><code>[mysql*]
-    user root
-    env.mysqlopts --defaults-file=/etc/mysql/my.cnf
-    env.mysqluser munin
-</code></pre>
-
-<h5>Добавление в автозагрузку</h5>
-
-<p>Добавить в автозагрузку не сложно. Необходимо выполнить на каждом сервере:</p>
-
-<pre><code># chkconfig --add munin-node
-# chkconfig munin-node on
-</code></pre>
-
-<p>Проверяем:</p>
-
-<pre><code># chkconfig --list munin-node
-munin-node      0:off   1:off   2:on    3:on    4:on    5:on    6:off
-</code></pre>
-
-<h5>Использование.</h5>
-
-<p>На главном сервере Munin необходим Web сервер. В файле /etc/munin/munin.conf прописывается куда будут генерироваться итоговые .html
-Например для стандартных настроек достаточно просто в браузере перейти на ip адресс главного сервера munin: http://172.16.0.10/munin</p>
-]]></content>
-  </entry>
   
-  <entry>
-    <title type="html"><![CDATA[Решение некоторых проблем в DRBD]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/"/>
-    <updated>2013-01-29T14:39:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd</id>
-    <content type="html"><![CDATA[<p>Рассмотрю кратко решение проблем в DRBD Diskless и Split-brain.</p>
-
-<h3>DRBD Diskless</h3>
-
-<p>При выходе из строя дискового массива и его восстановления  можно получить следующую ситуацию в drbd:</p>
-
-<pre><code># drbd-overview
-2:r2 Connected Secondary/Primary Diskless/UpToDate C r----
-</code></pre>
-
-<h4>Для решения этой проблемы необходимо сбросить мета данные:</h4>
-
-<p>На активной ноде необходимо отмонтировать раздел. Затем на неактивной ноде отключаем ресурс:</p>
-
-<pre><code># drbdadm down r2
-</code></pre>
-
-<p>Создаем заново блок мета-данных:</p>
-
-<pre><code># drbdadm create-md r2
- ...
-New drbd meta data block successfully created.
-</code></pre>
-
-<!-- more -->
-
-
-<p>Включаем ресурс обратно (должна начаться синхронизация):</p>
-
-<pre><code># drbdadm up r2
-# drbdadm connect r2
-# drbd-overview 
-2:r2 SyncTarget Secondary/Primary Inconsistent/UpToDate C r---- 
-[&gt;....................] sync'ed: 0.1% (31796/31796)M queue_delay: 0.0 ms 
-</code></pre>
-
-<p>Для изменения скорости синхронизации можно ввести:</p>
-
-<pre><code># drbdsetup /dev/drbd2 syncer -r 10M
-</code></pre>
-
-<p>Для задания в настройках необходимо прописать в /etc/drbd.conf :</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>syncer {
-</span><span class='line'>  rate 100M;
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>DRBD Split-brain</h3>
-
-<p>Ещё бывает ситуация когда ноды не синхронизируются со следующими признаками:</p>
-
-<pre><code># drbd-overview
-3:just StandAlone Primary/Unknown UpToDate/DUnknown r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
-
-<p>Причиной этого может стать состояние split-brain. Для решения этой проблемы необходимо:
-На secondary:</p>
-
-<pre><code># drbdadm disconnect just
-# drbdadm -- --discard-my-data connect just
-</code></pre>
-
-<p>На primary:</p>
-
-<pre><code># drbdadm connect just
-</code></pre>
-
-<p>После синхронизации (если она необходима) всё должно работать:</p>
-
-<pre><code># drbd-overview
-3:just Connected Primary/Secondary UpToDate/UpToDate C r----- /mnt/Just ext3 5.0G 156M 4.6G 4%
-</code></pre>
-]]></content>
-  </entry>
+  <div class="g-plusone" data-size="medium"></div>
   
-</feed>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2013/05/28/ssh-trick/" title="Previous Post: SSH трюки">&laquo; SSH трюки</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">Установка и настройка Pacemaker</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/05/28/ssh-trick/">SSH трюки</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/04/11/ntp-sinkhronizatsiia-vriemieni/">NTP - синхронизация времени</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Синхронизация файлов с помощью Lsyncd и Unison</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/">Установка crm shell в Pacemaker</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/Sibilia">@Sibilia</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'Sibilia',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+
+
+<section class="googleplus">
+  <h1>
+    <a href="https://plus.google.com/112831317637790292721?rel=author">
+      <img src="http://www.google.com/images/icons/ui/gprofile_button-32.png" width="32" height="32">
+      Google+
+    </a>
+  </h1>
+</section>
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Ilia Sibiryatkin -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'sibilia-octopress';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/';
+        var disqus_url = 'http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

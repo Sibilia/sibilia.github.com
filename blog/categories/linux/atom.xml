@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-05-28T17:52:06+03:00</updated>
+  <updated>2013-06-20T19:31:46+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,552 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Установка и настройка Pacemaker]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/"/>
+    <updated>2013-06-20T12:41:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker</id>
+    <content type="html"><![CDATA[<p>Для построения кластеров high availability (высокой доступности) я в своей работе использую <a href="http://clusterlabs.org/">Pacemaker</a>. Он себя хорошо зарекомендовал на многих проектах, очень гибкий, динамически развивается. Здесь я приведу краткую инструкцию себе на память по его установке и начальной настройке. Я не претендую на полноту изложения, за этим лучше идти в официальную <a href="http://clusterlabs.org/doc/">документацию</a>, благо она неплохо написана. Используемый дистрибутив CentOS 6. Пример будет описан на двух однотипных серверах.</p>
+
+<!--more-->
+
+
+<h3>Подготовка</h3>
+
+<p>Описывать установку CentOS я не буду, этого материала хватает. Я рекомендую устанавливать минимальный netinstall, всё что нужно сами доставим.</p>
+
+<p>Вкратце опишу что нам нужно перед тем как приступить непосредственно к установке pacemaker:</p>
+
+<ul>
+<li>Установленная CentOS.</li>
+<li>Настроенная сеть:  сервера должны быть в одной сети (по крайней мере для этого примера).</li>
+<li>hostname прописаны в /etc/hosts (как свой так и соседа). В данном примере будут использоваться имена <strong>node1</strong> и <strong>node2</strong>.</li>
+<li>Установлен и настроен SSH. Сгенерированы RSA ключи и разнесены по нодам. Доступ между node1 и node2 по ssh осуществляется без пароля. Есть в принципе способ генерировать ключи непосредственно внутри pacemaker, но этот способ я не рассматриваю, если интересно то вам нужно после установки кластера запустить <em>corosync-keygen</em> и разнести файл /etc/corosync/authkey по нодам.</li>
+<li>Установлен и настроен NTP.</li>
+</ul>
+
+
+<p>Устанавливать будем из репозитрия pacemaker - <a href="http://clusterlabs.org/rpm-next/">clusterlabs</a>, там стабильная версия и более свежая по сравнение с репозиторием CentOS. Добавляем репозиторий.
+<code>
+wget -O /etc/yum.repos.d/pacemaker.repo http://clusterlabs.org/rpm-next/rhel-6/clusterlabs.repo
+</code>
+Для работы с pacemaker я использую crm shell. К моему сожалению он теперь поставляется отдельно, добавим репозиторий для его установки. Можно его не ставить, тогда можно работать с pcmk, но мне удобен больше crm shell.
+<code>
+wget -O /etc/yum.repos.d/ha-clustering.repo http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/network:ha-clustering.repo
+</code></p>
+
+<h3>Установка</h3>
+
+<p>Текущая стабильная версия pacemaker использует архитектуру CMAN (вместо openais). Вообще, история развития кластера pacemaker/corosync очень багатая на глобальные изменения, но это отделная тема. Если интересна история развития кластеров то могу порекомендовать вот эту <a href="http://mlug.linux.by/?p=413">презентацию</a> от Владислава Богданова, ему кстати большая благодарность.</p>
+
+<p>Приступим к установке:
+```</p>
+
+<h1>yum install pacemaker cman crmsh</h1>
+
+<p><code>
+После завершения установки, у меня были следующие версии основных пакетов:
+</code></p>
+
+<h1>rpm -qa |grep -e pacemaker -e cman -e corosync -e crmsh</h1>
+
+<p>pacemaker-cli-1.1.9-1512.el6.x86_64
+pacemaker-1.1.9-1512.el6.x86_64
+corosync-1.4.5-35.1.x86_64
+pacemaker-libs-1.1.9-1512.el6.x86_64
+pacemaker-cluster-libs-1.1.9-1512.el6.x86_64
+cman-3.0.12.1-49.el6.x86_64
+corosynclib-1.4.5-35.1.x86_64
+crmsh-1.2.5-55.6.x86_64
+<code>
+Копируем пример конфига:
+</code>
+cp /etc/corosync/corosync.conf.example.udpu /etc/corosync/corosync.conf
+<code>
+Я использую для связи между нодами клсатера unicast вместо multicast, на сеть нагрузки меньше, защита лучше. Редактируем конфиг для нашей ситауции. Для тонкой настройки рекомендую почитать man corosync.conf. Привожу конфиг /etc/corosync/corosync.conf:
+</code></p>
+
+<h1>Please read the corosync.conf.5 manual page</h1>
+
+<p>compatibility: whitetank</p>
+
+<p>totem {</p>
+
+<pre><code>    version: 2
+    secauth: off
+    threads: 0
+    transport: udpu
+    interface {
+            member {
+                    memberaddr: 10.10.0.210
+            }
+            member {
+                    memberaddr: 10.10.0.211
+            }
+            ringnumber: 0
+            bindnetaddr: 10.10.0.0
+            mcastaddr: 226.98.1.1
+            mcastport: 5500
+            ttl: 1
+    }
+</code></pre>
+
+<p>}</p>
+
+<p>logging {</p>
+
+<pre><code>    fileline: off
+    to_stderr: no
+    to_logfile: yes
+    to_syslog: yes
+    logfile: /var/log/cluster/corosync.log
+    debug: on
+    timestamp: on
+    logger_subsys {
+            subsys: AMF
+            debug: off
+    }
+</code></pre>
+
+<p>}</p>
+
+<p>amf {</p>
+
+<pre><code>    mode: disabled
+</code></pre>
+
+<p>}
+<code>
+Так же не забываем включить сервис Pacemaker:
+</code></p>
+
+<h1>cat &lt;&lt; END >> /etc/corosync/service.d/pcmk</h1>
+
+<p>service {</p>
+
+<pre><code>    name: pacemaker
+    ver:  1
+</code></pre>
+
+<p>}
+END
+```
+По поводу значения <em>ver:  1</em>, он указывает что сервис pacemaker мы будем запускать сами. Для начала оставим так, в дальнейшем его можно поменять на <em>ver:  0</em> тогда pacemaker будет запускаться сам после запуска кластера.</p>
+
+<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf :
+```
+&lt;?xml version="1.0"?>
+<cluster config_version="1" name="my_cluster">
+  <logging debug="off"/>
+  <clusternodes></p>
+
+<pre><code>&lt;clusternode name="node1" nodeid="1"/&gt;
+&lt;clusternode name="node2" nodeid="2"/&gt;
+</code></pre>
+
+<p>  </clusternodes>
+</cluster>
+<code>
+После проверяем правильность конфигурационного файла cluster.conf:
+</code></p>
+
+<h1>ccs_config_validate</h1>
+
+<p>Configuration validates
+<code>
+Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2. Пробуем запустить кластер. Выполняем на node1 и node2:
+</code></p>
+
+<h1>service cman start</h1>
+
+<p>Starting cluster:
+   Checking if cluster has been disabled at boot...        [  OK  ]
+   Checking Network Manager...                             [  OK  ]
+   Global setup...                                         [  OK  ]
+   Loading kernel modules...                               [  OK  ]
+   Mounting configfs...                                    [  OK  ]
+   Starting cman...                                        [  OK  ]
+   Waiting for quorum...                                   [  OK  ]
+   Starting fenced...                                      [  OK  ]
+   Starting dlm_controld...                                [  OK  ]
+   Tuning DLM kernel config...                             [  OK  ]
+   Starting gfs_controld...                                [  OK  ]
+   Unfencing self...                                       [  OK  ]
+   Joining fence domain...                                 [  OK  ]
+<code>
+Проверяем ноды:
+</code></p>
+
+<h1>cman_tool nodes</h1>
+
+<p>Node  Sts   Inc   Joined               Name
+   1   M     44   2013-06-20 15:20:20  node1
+   2   M     40   2013-06-20 15:20:20  node2
+<code>
+Вроде всё чисто, проверяем в /var/log/cluster/corosync.log. Ищем там любые warning и error. Если и там всё отлично, пробуем стартовать pacemaker. Опять же запускаем на node1 и node2:
+</code></p>
+
+<h1>service pacemaker start</h1>
+
+<p>Starting cluster:
+   Checking if cluster has been disabled at boot...        [  OK  ]
+   Checking Network Manager...                             [  OK  ]
+   Global setup...                                         [  OK  ]
+   Loading kernel modules...                               [  OK  ]
+   Mounting configfs...                                    [  OK  ]
+   Starting cman...                                        [  OK  ]
+   Waiting for quorum...                                   [  OK  ]
+   Starting fenced...                                      [  OK  ]
+   Starting dlm_controld...                                [  OK  ]
+   Tuning DLM kernel config...                             [  OK  ]
+   Starting gfs_controld...                                [  OK  ]
+   Unfencing self...                                       [  OK  ]
+   Joining fence domain...                                 [  OK  ]
+Starting Pacemaker Cluster Manager:                        [  OK  ]
+```
+Снова проверяем /var/log/cluster/corosync.log. Там будет несколько warning по поводу отсутствующей конфигурации /var/lib/pacemaker/cib/cib.xml, но это нормально, мы её сейчас будем создавать.</p>
+
+<p>Проверяем состяние кластера:
+```</p>
+
+<h1>crm_mon -1</h1>
+
+<p>Last updated: Thu Jun 20 15:30:13 2013
+Last change: Thu Jun 20 15:25:06 2013 via crmd on node1
+Stack: cman
+Current DC: node1 - partition with quorum
+Version: 1.1.9-1512.el6-2a917dd
+2 Nodes configured, unknown expected votes
+0 Resources configured.</p>
+
+<p>Online: [ node1 node2 ]
+```
+Установка закончена. Теперь можно приступать к конфигурированию кластера.</p>
+
+<h3>Конфигурирование pacemaker</h3>
+
+<p>Для управлением конфигурацией кластера будем использовать, как уже раньше отмечалось, crm shell. За разъяснением как работать с pcmk обращайтесь в официальную документацию.</p>
+
+<p>Для начала посмотрим что имеем:
+```</p>
+
+<h1>crm configure show</h1>
+
+<p>node node1
+node node2
+property $id="cib-bootstrap-options" \</p>
+
+<pre><code>    dc-version="1.1.9-1512.el6-2a917dd" \
+    cluster-infrastructure="cman"
+</code></pre>
+
+<p><code>
+Сначало пропишем основные параметры:
+</code>
+[root@node2 ~]  # crm
+crm(live)# configure
+crm(live)configure# cib new new_conf
+INFO: new_conf shadow CIB created
+crm(new_conf)configure# cib use new_conf
+crm(new_conf)configure# property stonith-enabled=false
+crm(new_conf)configure# property no-quorum-policy=ignore
+crm(new_conf)configure# property pe-error-series-max=128
+crm(new_conf)configure# property pe-input-series-max=128
+crm(new_conf)configure# property pe-warn-series-max=128
+crm(new_conf)configure# property symmetric-cluster=false
+crm(new_conf)configure# commit
+crm(new_conf)configure# cib use live
+crm(live)configure# cib commit new_conf
+crm(live)configure# show
+node node1
+node node2
+property $id="cib-bootstrap-options" \</p>
+
+<pre><code>    dc-version="1.1.9-1512.el6-2a917dd" \
+    cluster-infrastructure="cman" \
+    stonith-enabled="false" \
+    no-quorum-policy="ignore" \
+    pe-error-series-max="128" \
+    pe-input-series-max="128" \
+    pe-warn-series-max="128" \
+    symmetric-cluster="false"
+</code></pre>
+
+<p>```
+Так, теперь немного комментариев:
+- <em>crm(live)configure# cib new new_conf</em> - Создаём новую конфигурацию в CIB, в которой и будем делать все изменения. Не рекомендую работать в основной cib (live). Все изменения в новой конфигурации (new_conf) не применяются на кластер до тех пор пока мы её не перенесём в cib live с помощью <em>cib commit new_conf</em>.
+- <em>property stonith-enabled=false</em> и <em>property no-quorum-policy=ignore</em> - Выключаем fencing и действия по умолчанию при потере кворума.
+- <em>property symmetric-cluster=false</em> - Переводим кластер в несимметричный режим. В отличии от симметричного, он не запускает нигде никакие ресурсы, если это явно не разрешено в location (об этом ниже). В принципе, в данном случае это нам не нужно, даже добавляет неудобства. Однако это добавляет удобства в конфигурировании если нод больше двух и много ресурсов, которые привязаны только к определённо из них. Я не настаиваю на этом параметре, необходимость в нём зависит от архитектуры кластера.</p>
+
+<h3>Ресурсы кластера</h3>
+
+<p>Ресурсами в кластере могут являться программы, скрипты, ip адреса, файловые системы и т.д. Вариаций много. Скрипты для управления ресурсами находятся в /usr/lib/ocf/resource.d/. К примеру вот список доступных ресурс агентов для провайдера Heartbeat:
+```</p>
+
+<h1>crm ra list ocf heartbeat</h1>
+
+<p>AoEtarget       AudibleAlarm    CTDB                ClusterMon  Delay               Dummy
+EvmsSCC         Evmsd           Filesystem          ICP         IPaddr              IPaddr2
+IPsrcaddr       IPv6addr        LVM                 LinuxSCSI   MailTo              ManageRAID
+ManageVE        Pure-FTPd       Raid1               Route       SAPDatabase         SAPInstance
+SendArp         ServeRAID       SphinxSearchDaemon  Squid       Stateful            SysInfo
+VIPArip         VirtualDomain   WAS                 WAS6        WinPopup            Xen
+Xinetd          anything        apache              conntrackd  db2                 drbd
+eDir88          ethmonitor      exportfs            fio         iSCSILogicalUnit    iSCSITarget
+ids             iscsi           jboss               lxc         mysql               mysql-proxy
+nfsserver       nginx           oracle              oralsnr     pgsql               pingd
+portblock       postfix         proftpd             rsyncd      scsi2reservation    sfex
+symlink         syslog-ng       tomcat              vmware
+```
+Если нужен не хватает, можно написать свой. Написаны ресурс агенты на bash.</p>
+
+<p>Приступим к добавлению ресурсов. Создадим к примеру следующую конфигурацию:</p>
+
+<p>Имеется две ноды, на них установлен и настроен nginx, для синхронизации рабочей директории nginx будет использоваться lsyncd/unison. Балансировка будет присходить по двум плавающим ip адресам.</p>
+
+<p>Для начала устанавливаем всё необходимое:
+<code>
+yum install nginx lsyncd unison
+</code>
+Про настройку lsyncd я уже <a href="http://sibilia.github.io/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">писал</a>. Просто меняем в <em>source</em> и в команде запуска unison /mnt/lsynced на что-нибудь вроде /usr/share/nginx/html. Это конечно зависит от nginx.</p>
+
+<p>Проверяем lsyncd. Запускаем на node2 и создаём файлик на ней же /usr/share/nginx/html/test. В выводе будет что-то вроде:
+<code>
+[root@node2 ~]  # lsyncd -nodaemon /etc/lsyncd.conf
+16:37:59 Normal: Event Create spawns action "/usr/bin/unison -retry 5 -owner -group -batch /usr/share/nginx/html ssh://node1//usr/share/nginx/html"
+Contacting server...
+Connected [//node1//usr/share/nginx/html -&gt; //node2//usr/share/nginx/html]
+...
+Synchronization complete  (1 item transferred, 0 skipped, 0 failures)
+16:37:59 Normal: Retrying Create on /usr/share/nginx/html//test = 0
+</code>
+Всё отлично, прерываем lsyncd по ctrl-c.
+Ресурс агент для lsyncd я буду использовать свой. Для этого добавляем его на node1 и node2:
+<code>
+wget -O /usr/lib/ocf/resource.d/heartbeat/lsyncd https://raw.github.com/Sibilia/scripts/master/lsyncd
+</code></p>
+
+<p>Настройку nginx приводить не буду, подключайте фантазию.</p>
+
+<p>Теперь приступим к созданию ресурсов в кластере. Для lsyncd я буду использовать clone ресурс, а для nginx два разных ресурса для каждой ноды просто для примера. Выбор того или иного способа описания ресурсов зависит лишь от ситуации и ваших личных предпочтений.
+```</p>
+
+<h1>crm</h1>
+
+<p>crm(live)# configure
+crm(live)configure# cib use new_conf
+crm(new_conf)configure# primitive lsyncd ocf:heartbeat:lsyncd params cmdline_options="-log scarce"
+crm(new_conf)configure# location lsyncd-on-node1 lsyncd 500: node1
+crm(new_conf)configure# location lsyncd-on-node2 lsyncd 500: node2
+crm(new_conf)configure# clone lsyncd-cl lsyncd
+INFO: resource references in location:lsyncd-on-node1 updated
+INFO: resource references in location:lsyncd-on-node2 updated
+crm(new_conf)configure# primitive nginx1 ocf:heartbeat:nginx
+crm(new_conf)configure# location nginx1-on-node1 nginx1 inf: node1
+crm(new_conf)configure# location nginx2-on-node2 nginx2 inf: node2
+crm(new_conf)configure# primitive ipaddr_215 ocf:heartbeat:IPaddr2 params ip=10.10.0.215
+crm(new_conf)configure# primitive ipaddr_216 ocf:heartbeat:IPaddr2 params ip=10.10.0.216
+crm(new_conf)configure# location ip_215-on-node1 ipaddr_215 1000: node1
+crm(new_conf)configure# location ip_215-on-node2 ipaddr_215 500: node2
+crm(new_conf)configure# location ip_216-on-node2 ipaddr_216 1000: node2
+crm(new_conf)configure# location ip_216-on-node1 ipaddr_216 500: node1
+crm(new_conf)configure# commit
+crm(new_conf)configure# cib use
+crm(live)configure# cib commit new_conf
+INFO: commited 'new_conf' shadow CIB to the cluster
+crm(live)configure# show
+node node1
+node node2
+primitive ipaddr_215 ocf:heartbeat:IPaddr2 \</p>
+
+<pre><code>    params ip="10.10.0.215"
+</code></pre>
+
+<p>primitive ipaddr_216 ocf:heartbeat:IPaddr2 \</p>
+
+<pre><code>    params ip="10.10.0.216"
+</code></pre>
+
+<p>primitive lsyncd ocf:heartbeat:lsyncd \</p>
+
+<pre><code>    params cmdline_options="-log scarce"
+</code></pre>
+
+<p>primitive nginx1 ocf:heartbeat:nginx
+primitive nginx2 ocf:heartbeat:nginx
+clone lsyncd-cl lsyncd
+location ip_215-on-node1 ipaddr_215 1000: node1
+location ip_215-on-node2 ipaddr_215 500: node2
+location ip_216-on-node1 ipaddr_216 500: node1
+location ip_216-on-node2 ipaddr_216 1000: node2
+location lsyncd-on-node1 lsyncd-cl 500: node1
+location lsyncd-on-node2 lsyncd-cl 500: node2
+location nginx1-on-node1 nginx1 inf: node1
+location nginx2-on-node2 nginx2 inf: node2
+property $id="cib-bootstrap-options" \</p>
+
+<pre><code>    dc-version="1.1.9-1512.el6-2a917dd" \
+    cluster-infrastructure="cman" \
+    stonith-enabled="false" \
+    no-quorum-policy="ignore" \
+    pe-error-series-max="128" \
+    pe-input-series-max="128" \
+    pe-warn-series-max="128" \
+    symmetric-cluster="false"
+</code></pre>
+
+<p><code>
+Для удбства написания конфигурации, можете набрать в crm(new_conf)configure# *edit*, открется редактор (в моём случае vim), и вставить вывод *crm(live)configure# show* прямо туда. После сохраняем и выходим.
+Теперь проверяем как всё запустилось:
+</code></p>
+
+<h1>crm_mon -fnr1</h1>
+
+<p>Last updated: Thu Jun 20 18:45:48 2013
+Last change: Thu Jun 20 18:34:58 2013 via cibadmin on node1
+Stack: cman
+Current DC: node2 - partition with quorum
+Version: 1.1.9-1512.el6-2a917dd
+2 Nodes configured, unknown expected votes
+6 Resources configured.</p>
+
+<p>Node node1: online</p>
+
+<pre><code>    nginx1  (ocf::heartbeat:nginx): Started 
+    ipaddr_215      (ocf::heartbeat:IPaddr2):       Started 
+    lsyncd:1        (ocf::heartbeat:lsyncd):        Started 
+</code></pre>
+
+<p>Node node2: online</p>
+
+<pre><code>    nginx2  (ocf::heartbeat:nginx): Started 
+    lsyncd:0        (ocf::heartbeat:lsyncd):        Started 
+    ipaddr_216      (ocf::heartbeat:IPaddr2):       Started 
+</code></pre>
+
+<p>Inactive resources:</p>
+
+<p>Migration summary:
+* Node node2:
+* Node node1:
+<code>
+Проверим случай выпадения одной ноды, после её вернём обратно:
+</code></p>
+
+<h1>crm node standby node1</h1>
+
+<h1># crm_mon -fnr1</h1>
+
+<p>Last updated: Thu Jun 20 18:47:47 2013
+Last change: Thu Jun 20 18:46:51 2013 via crm_attribute on node1
+Stack: cman
+Current DC: node2 - partition with quorum
+Version: 1.1.9-1512.el6-2a917dd
+2 Nodes configured, unknown expected votes
+6 Resources configured.</p>
+
+<p>Node node1: standby
+Node node2: online</p>
+
+<pre><code>    nginx2  (ocf::heartbeat:nginx): Started 
+    ipaddr_215      (ocf::heartbeat:IPaddr2):       Started 
+    lsyncd:0        (ocf::heartbeat:lsyncd):        Started 
+    ipaddr_216      (ocf::heartbeat:IPaddr2):       Started 
+</code></pre>
+
+<p>Inactive resources:</p>
+
+<p> nginx1 (ocf::heartbeat:nginx): Stopped
+ Clone Set: lsyncd-cl [lsyncd]</p>
+
+<pre><code> Started: [ node2 ]
+ Stopped: [ lsyncd:1 ]
+</code></pre>
+
+<p>Migration summary:
+* Node node2:
+* Node node1:</p>
+
+<h1>crm node online node1</h1>
+
+<p>```
+Убедились что оба ip адреса переплыли на одну ноду.</p>
+
+<h3>Работа с кластером</h3>
+
+<p>В рабочем процессе, мы можем управлять состояниями нод и состоянием/размещением ресурсов.
+К примеру выведем ноду из кластера и вернём обратно:
+```</p>
+
+<h1>crm node standby node1</h1>
+
+<h1>crm node online node1</h1>
+
+<p><code>
+Можем остановить/переместить ресурс:
+</code></p>
+
+<h1>crm resource move ipaddr_216 node1</h1>
+
+<h1>crm resource stop ipaddr_216</h1>
+
+<h1>crm resource start ipaddr_216</h1>
+
+<h1>crm resource unmove ipaddr_216</h1>
+
+<p><code>
+Все эти действия сразу выполняются. Бывает ситуация, когда ресурс вылетает, тогда pacemaker определяет по мониторингу что он не запущен и сново запускает, увеличевая при этом счётчик таких ошибок. К примеру убъём процесс nginx:
+</code></p>
+
+<h1>ps aux |grep nginx |grep -v grep</h1>
+
+<p>root     10796  0.0  0.4  96024  2040 ?        Ss   18:48   0:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+nginx    10798  0.0  0.5  96376  2708 ?        S    18:48   0:00 nginx: worker process</p>
+
+<h1>kill -KILL 10796 10798</h1>
+
+<h1>crm_mon -fnr1</h1>
+
+<p>Node node1: online</p>
+
+<pre><code>    nginx1  (ocf::heartbeat:nginx): Started 
+    ipaddr_215      (ocf::heartbeat:IPaddr2):       Started 
+    lsyncd:1        (ocf::heartbeat:lsyncd):        Started 
+</code></pre>
+
+<p>Node node2: online</p>
+
+<pre><code>    nginx2  (ocf::heartbeat:nginx): Started 
+    ipaddr_216      (ocf::heartbeat:IPaddr2):       Started 
+    lsyncd:0        (ocf::heartbeat:lsyncd):        Started 
+</code></pre>
+
+<p>Inactive resources:</p>
+
+<p>Migration summary:
+* Node node2:
+* Node node1:
+   nginx1: migration-threshold=1000000 fail-count=2 last-failure='Thu Jun 20 19:17:19 2013'</p>
+
+<p>Failed actions:</p>
+
+<pre><code>nginx1_monitor_5000 (node=node1, call=276, rc=7, status=complete): not running
+</code></pre>
+
+<p><code>
+Появилась запись что были ошибки. Если же ресурс не может запуститься, или слишком часто вылетает, то значение счётчика fail-count выставляется в 1000000 и после этого этот ресурс на этой ноде не будет востонавливаться. Для сброса счётчика можно сделать:
+</code></p>
+
+<h1>crm resource cleanup nginx1</h1>
+
+<p>```</p>
+
+<h3>P.S.</h3>
+
+<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размешение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях, или пишите на почту.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[SSH трюки]]></title>
@@ -292,57 +838,6 @@ yum install ./crmsh*.rpm ./pssh*.rpm
 </span><span class='line'><span class="k">        fi</span>
 </span><span class='line'><span class="k">done</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Перенаправление http]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http/"/>
-    <updated>2013-03-04T13:53:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/03/04/pierienapravlieniie-http</id>
-    <content type="html"><![CDATA[<p>Возникла необходимость по наступлению определённого события временно перенаправлять http соединения на другой порт, где слушает nginx с заглушкой. Это легко можно сделать с помошью парочки правил в iptables. Приведу несколько основных моментов из bash скрипта.
-Нам нужны две таблицы в новой цепочке: "nat" для непосредственно перенаправления и "filter" для сброса активных сессий. Фильтровать активные сессии необходимо потому, что в таблицу "nat", цепочки PREROUTING, поподают лишь tcp соединения с состоянием NEW. Активные tcp соединения живут примерно 2-3 минуты. Если это не критично, то можно обойтись без их фильтрации. Для этого просто не добавляем все правила в которых указана таблица "filter".
-Для начала создадим новую цепочку. Это удобно тем что её можно очистить полностью, когда необходимо вернуть всё к изначальному состоянию.
-<code>
-iptables -t nat -N HTTP_REDIR
-iptables -t filter -N HTTP_REDIR
-</code></p>
-
-<!-- more -->
-
-
-<p>Теперь создадим два правила в цепочках PREROUTING и INPUT в которых будем направлять tcp в нашу цепочку. Эти правила не будут удаляться.
-<code>
-iptables -t nat -I PREROUTING -p tcp -j HTTP_REDIR
-iptables -t filter -I INPUT -p tcp -j HTTP_REDIR
-</code>
-Теперь, если нам необходимо включить перенаправление, то добавляем правила в нашу цепочку:
-<code>
-iptables -t nat -A HTTP_REDIR -p tcp --dport 80 -j REDIRECT --to-port 20302
-iptables -t filter -A HTTP_REDIR -p tcp --dport 80 -j REJECT --reject-with tcp-reset
-</code>
-Если необходимо перенаправлять к примеру ещё и https то можно вместо "--dport 80" указать "-m multiport --dports 80,443"
-Чтобы убрать перенаправление, просто чистим нашу цепочку.
-<code>
-iptables -t nat -F HTTP_REDIR
-iptables -t filter -F HTTP_REDIR
-</code>
-Вот в принципе и всё, за всеми подробностями идём в маны iptables, написано там всё очень подробно.</p>
-
-<h4>P.S.</h4>
-
-<p>Нашел более удобный способ сброса активный tcp соединений - conntrack.
-Пакет называется по разному, в Debian вроде просто conntrack, в CentOS/RedHat conntrack-tool.
-После установки, у нас появляется возможность удобно посмотреть активные соединения и их статус:
-<code>
-conntrack -L -p tcp --dport 80
-</code>
-Так же удобно их разом очистить:
-<code>
-conntrack -D -p tcp --dport 80
-</code>
-Фильтровать он по multiport не умеет. Суть заключается в том, что просто чистится в ядре таблица соединений tcp по определённому порту. Входящий пакет после этого со статусом не NEW не находится в таблице и сбрасывается с tcp-reset.
-В таком случае нет нужды использовать таблицу filter.</p>
 ]]></content>
   </entry>
   

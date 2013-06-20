@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-20T19:31:46+03:00</updated>
+  <updated>2013-06-21T02:11:19+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Установка и настройка Pacemaker]]></title>
+    <title type="html"><![CDATA[Установка и настройка кластера Pacemaker]]></title>
     <link href="http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/"/>
     <updated>2013-06-20T12:41:00+03:00</updated>
     <id>http://Sibilia.github.com/blog/2013/06/20/ustanovka-i-nastroika-pacemaker</id>
@@ -223,9 +223,7 @@ Starting Pacemaker Cluster Manager:                        [  OK  ]
 
 <h1>crm_mon -1</h1>
 
-<p>Last updated: Thu Jun 20 15:30:13 2013
-Last change: Thu Jun 20 15:25:06 2013 via crmd on node1
-Stack: cman
+<p>Stack: cman
 Current DC: node1 - partition with quorum
 Version: 1.1.9-1512.el6-2a917dd
 2 Nodes configured, unknown expected votes
@@ -253,7 +251,7 @@ property $id="cib-bootstrap-options" \</p>
 </code></pre>
 
 <p><code>
-Сначало пропишем основные параметры:
+Пропишем основные параметры:
 </code>
 [root@node2 ~]  # crm
 crm(live)# configure
@@ -285,10 +283,14 @@ property $id="cib-bootstrap-options" \</p>
 </code></pre>
 
 <p>```
-Так, теперь немного комментариев:
-- <em>crm(live)configure# cib new new_conf</em> - Создаём новую конфигурацию в CIB, в которой и будем делать все изменения. Не рекомендую работать в основной cib (live). Все изменения в новой конфигурации (new_conf) не применяются на кластер до тех пор пока мы её не перенесём в cib live с помощью <em>cib commit new_conf</em>.
-- <em>property stonith-enabled=false</em> и <em>property no-quorum-policy=ignore</em> - Выключаем fencing и действия по умолчанию при потере кворума.
-- <em>property symmetric-cluster=false</em> - Переводим кластер в несимметричный режим. В отличии от симметричного, он не запускает нигде никакие ресурсы, если это явно не разрешено в location (об этом ниже). В принципе, в данном случае это нам не нужно, даже добавляет неудобства. Однако это добавляет удобства в конфигурировании если нод больше двух и много ресурсов, которые привязаны только к определённо из них. Я не настаиваю на этом параметре, необходимость в нём зависит от архитектуры кластера.</p>
+Так, теперь немного комментариев:</p>
+
+<ul>
+<li><p><em>crm(live)configure# cib new new_conf</em> - Создаём новую конфигурацию в CIB, в которой и будем делать все изменения. Не рекомендую работать в основной cib (live). Все изменения в новой конфигурации (new_conf) не применяются на кластер до тех пор пока мы её не перенесём в cib live с помощью <em>cib commit new_conf</em>.</p></li>
+<li><p><em>property stonith-enabled=false</em> и <em>property no-quorum-policy=ignore</em> - Выключаем fencing и действия по умолчанию при потере кворума.</p></li>
+<li><p><em>property symmetric-cluster=false</em> - Переводим кластер в несимметричный режим. В отличии от симметричного, он не запускает нигде никакие ресурсы, если это явно не разрешено в location (об этом ниже). В принципе, в данном случае это нам не нужно, даже добавляет неудобства. Однако это добавляет удобства в конфигурировании если нод больше двух и много ресурсов, которые привязаны только к определённым из них. Я не настаиваю на этом параметре, необходимость в нём зависит от архитектуры кластера.</p></li>
+</ul>
+
 
 <h3>Ресурсы кластера</h3>
 
@@ -297,20 +299,26 @@ property $id="cib-bootstrap-options" \</p>
 
 <h1>crm ra list ocf heartbeat</h1>
 
-<p>AoEtarget       AudibleAlarm    CTDB                ClusterMon  Delay               Dummy
-EvmsSCC         Evmsd           Filesystem          ICP         IPaddr              IPaddr2
-IPsrcaddr       IPv6addr        LVM                 LinuxSCSI   MailTo              ManageRAID
-ManageVE        Pure-FTPd       Raid1               Route       SAPDatabase         SAPInstance
-SendArp         ServeRAID       SphinxSearchDaemon  Squid       Stateful            SysInfo
-VIPArip         VirtualDomain   WAS                 WAS6        WinPopup            Xen
-Xinetd          anything        apache              conntrackd  db2                 drbd
-eDir88          ethmonitor      exportfs            fio         iSCSILogicalUnit    iSCSITarget
-ids             iscsi           jboss               lxc         mysql               mysql-proxy
-nfsserver       nginx           oracle              oralsnr     pgsql               pingd
-portblock       postfix         proftpd             rsyncd      scsi2reservation    sfex
-symlink         syslog-ng       tomcat              vmware
+<p>AoEtarget           AudibleAlarm        CTDB                ClusterMon
+Delay               Dummy               EvmsSCC             Evmsd
+Filesystem          ICP                 IPaddr              IPaddr2
+IPsrcaddr           IPv6addr            LVM                 LinuxSCSI
+MailTo              ManageRAID          ManageVE            Pure-FTPd
+Raid1               Route               SAPDatabase         SAPInstance
+SendArp             ServeRAID           SphinxSearchDaemon  Squid
+Stateful            SysInfo             VIPArip             VirtualDomain
+WAS                 WAS6                WinPopup            Xen
+Xinetd              anything            apache              conntrackd
+db2                 drbd                eDir88              ethmonitor
+exportfs            fio                 iSCSILogicalUnit    iSCSITarget
+ids                 iscsi               jboss               lsyncd
+lxc                 mysql               mysql-proxy         nfsserver
+nginx               oracle              oralsnr             pgsql
+pingd               portblock           postfix             proftpd
+rsyncd              scsi2reservation    sfex                symlink
+syslog-ng           tomcat              vmware
 ```
-Если нужен не хватает, можно написать свой. Написаны ресурс агенты на bash.</p>
+Если нет нужного, можно написать свой. Написаны ресурс агенты на bash.­</p>
 
 <p>Приступим к добавлению ресурсов. Создадим к примеру следующую конфигурацию:</p>
 
@@ -347,26 +355,10 @@ wget -O /usr/lib/ocf/resource.d/heartbeat/lsyncd https://raw.github.com/Sibilia/
 
 <p>crm(live)# configure
 crm(live)configure# cib use new_conf
-crm(new_conf)configure# primitive lsyncd ocf:heartbeat:lsyncd params cmdline_options="-log scarce"
-crm(new_conf)configure# location lsyncd-on-node1 lsyncd 500: node1
-crm(new_conf)configure# location lsyncd-on-node2 lsyncd 500: node2
-crm(new_conf)configure# clone lsyncd-cl lsyncd
-INFO: resource references in location:lsyncd-on-node1 updated
-INFO: resource references in location:lsyncd-on-node2 updated
-crm(new_conf)configure# primitive nginx1 ocf:heartbeat:nginx
-crm(new_conf)configure# location nginx1-on-node1 nginx1 inf: node1
-crm(new_conf)configure# location nginx2-on-node2 nginx2 inf: node2
-crm(new_conf)configure# primitive ipaddr_215 ocf:heartbeat:IPaddr2 params ip=10.10.0.215
-crm(new_conf)configure# primitive ipaddr_216 ocf:heartbeat:IPaddr2 params ip=10.10.0.216
-crm(new_conf)configure# location ip_215-on-node1 ipaddr_215 1000: node1
-crm(new_conf)configure# location ip_215-on-node2 ipaddr_215 500: node2
-crm(new_conf)configure# location ip_216-on-node2 ipaddr_216 1000: node2
-crm(new_conf)configure# location ip_216-on-node1 ipaddr_216 500: node1
-crm(new_conf)configure# commit
-crm(new_conf)configure# cib use
-crm(live)configure# cib commit new_conf
-INFO: commited 'new_conf' shadow CIB to the cluster
-crm(live)configure# show
+crm(new_conf)configure# edit
+<code>
+И приводим конфигурацию к следующему виде:
+</code>
 node node1
 node node2
 primitive ipaddr_215 ocf:heartbeat:IPaddr2 \</p>
@@ -408,15 +400,20 @@ property $id="cib-bootstrap-options" \</p>
 </code></pre>
 
 <p><code>
-Для удбства написания конфигурации, можете набрать в crm(new_conf)configure# *edit*, открется редактор (в моём случае vim), и вставить вывод *crm(live)configure# show* прямо туда. После сохраняем и выходим.
+После выходим из редактора, и применяем конфигурацию на кластер:
+</code>
+crm(new_conf)configure# commit
+crm(new_conf)configure# cib use
+crm(live)configure# cib commit new_conf
+INFO: commited 'new_conf' shadow CIB to the cluster
+crm(live)configure# show
+<code>
 Теперь проверяем как всё запустилось:
 </code></p>
 
 <h1>crm_mon -fnr1</h1>
 
-<p>Last updated: Thu Jun 20 18:45:48 2013
-Last change: Thu Jun 20 18:34:58 2013 via cibadmin on node1
-Stack: cman
+<p>Stack: cman
 Current DC: node2 - partition with quorum
 Version: 1.1.9-1512.el6-2a917dd
 2 Nodes configured, unknown expected votes
@@ -447,11 +444,9 @@ Version: 1.1.9-1512.el6-2a917dd
 
 <h1>crm node standby node1</h1>
 
-<h1># crm_mon -fnr1</h1>
+<h1>crm_mon -fnr1</h1>
 
-<p>Last updated: Thu Jun 20 18:47:47 2013
-Last change: Thu Jun 20 18:46:51 2013 via crm_attribute on node1
-Stack: cman
+<p>Stack: cman
 Current DC: node2 - partition with quorum
 Version: 1.1.9-1512.el6-2a917dd
 2 Nodes configured, unknown expected votes
@@ -519,7 +514,8 @@ nginx    10798  0.0  0.5  96376  2708 ?        S    18:48   0:00 nginx: worker p
 
 <h1>crm_mon -fnr1</h1>
 
-<p>Node node1: online</p>
+<p>...
+Node node1: online</p>
 
 <pre><code>    nginx1  (ocf::heartbeat:nginx): Started 
     ipaddr_215      (ocf::heartbeat:IPaddr2):       Started 

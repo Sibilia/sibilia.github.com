@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Установка и настройка Pacemaker - Sibilia octopress blog</title>
+  <title>Установка и настройка кластера Pacemaker - Sibilia octopress blog</title>
   <meta name="author" content="Ilia Sibiryatkin">
 
   
@@ -67,7 +67,7 @@
   
   <header>
     
-      <h1 class="entry-title">Установка и настройка Pacemaker</h1>
+      <h1 class="entry-title">Установка и настройка кластера Pacemaker</h1>
     
     
       <p class="meta">
@@ -145,7 +145,7 @@
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># rpm -qa |grep -e pacemaker -e cman -e corosync -e crmsh                                                
+</pre></td><td class='code'><pre><code class=''><span class='line'># rpm -qa |grep -e pacemaker -e cman -e corosync -e crmsh
 </span><span class='line'>pacemaker-cli-1.1.9-1512.el6.x86_64
 </span><span class='line'>pacemaker-1.1.9-1512.el6.x86_64
 </span><span class='line'>corosync-1.4.5-35.1.x86_64
@@ -386,18 +386,12 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># crm_mon -1
-</span><span class='line'>Last updated: Thu Jun 20 15:30:13 2013
-</span><span class='line'>Last change: Thu Jun 20 15:25:06 2013 via crmd on node1
 </span><span class='line'>Stack: cman
 </span><span class='line'>Current DC: node1 - partition with quorum
 </span><span class='line'>Version: 1.1.9-1512.el6-2a917dd
 </span><span class='line'>2 Nodes configured, unknown expected votes
 </span><span class='line'>0 Resources configured.
-</span><span class='line'>
 </span><span class='line'>
 </span><span class='line'>Online: [ node1 node2 ]</span></code></pre></td></tr></table></div></figure>
 
@@ -424,7 +418,7 @@
 </span><span class='line'>        cluster-infrastructure="cman"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Сначало пропишем основные параметры:</p>
+<p>Пропишем основные параметры:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -480,10 +474,14 @@
 </span><span class='line'>        symmetric-cluster="false"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Так, теперь немного комментариев:
-- <em>crm(live)configure# cib new new_conf</em> - Создаём новую конфигурацию в CIB, в которой и будем делать все изменения. Не рекомендую работать в основной cib (live). Все изменения в новой конфигурации (new_conf) не применяются на кластер до тех пор пока мы её не перенесём в cib live с помощью <em>cib commit new_conf</em>.
-- <em>property stonith-enabled=false</em> и <em>property no-quorum-policy=ignore</em> - Выключаем fencing и действия по умолчанию при потере кворума.
-- <em>property symmetric-cluster=false</em> - Переводим кластер в несимметричный режим. В отличии от симметричного, он не запускает нигде никакие ресурсы, если это явно не разрешено в location (об этом ниже). В принципе, в данном случае это нам не нужно, даже добавляет неудобства. Однако это добавляет удобства в конфигурировании если нод больше двух и много ресурсов, которые привязаны только к определённо из них. Я не настаиваю на этом параметре, необходимость в нём зависит от архитектуры кластера.</p>
+<p>Так, теперь немного комментариев:</p>
+
+<ul>
+<li><p><em>crm(live)configure# cib new new_conf</em> - Создаём новую конфигурацию в CIB, в которой и будем делать все изменения. Не рекомендую работать в основной cib (live). Все изменения в новой конфигурации (new_conf) не применяются на кластер до тех пор пока мы её не перенесём в cib live с помощью <em>cib commit new_conf</em>.</p></li>
+<li><p><em>property stonith-enabled=false</em> и <em>property no-quorum-policy=ignore</em> - Выключаем fencing и действия по умолчанию при потере кворума.</p></li>
+<li><p><em>property symmetric-cluster=false</em> - Переводим кластер в несимметричный режим. В отличии от симметричного, он не запускает нигде никакие ресурсы, если это явно не разрешено в location (об этом ниже). В принципе, в данном случае это нам не нужно, даже добавляет неудобства. Однако это добавляет удобства в конфигурировании если нод больше двух и много ресурсов, которые привязаны только к определённым из них. Я не настаиваю на этом параметре, необходимость в нём зависит от архитектуры кластера.</p></li>
+</ul>
+
 
 <h3>Ресурсы кластера</h3>
 
@@ -502,22 +500,34 @@
 <span class='line-number'>11</span>
 <span class='line-number'>12</span>
 <span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># crm ra list ocf heartbeat
-</span><span class='line'>AoEtarget     AudibleAlarm    CTDB                ClusterMon  Delay               Dummy
-</span><span class='line'>EvmsSCC           Evmsd           Filesystem          ICP         IPaddr              IPaddr2
-</span><span class='line'>IPsrcaddr     IPv6addr        LVM                 LinuxSCSI   MailTo              ManageRAID
-</span><span class='line'>ManageVE      Pure-FTPd       Raid1               Route       SAPDatabase         SAPInstance
-</span><span class='line'>SendArp           ServeRAID       SphinxSearchDaemon  Squid       Stateful            SysInfo
-</span><span class='line'>VIPArip           VirtualDomain   WAS                 WAS6        WinPopup            Xen
-</span><span class='line'>Xinetd            anything        apache              conntrackd  db2                 drbd
-</span><span class='line'>eDir88            ethmonitor      exportfs            fio         iSCSILogicalUnit    iSCSITarget
-</span><span class='line'>ids               iscsi           jboss               lxc         mysql               mysql-proxy
-</span><span class='line'>nfsserver     nginx           oracle              oralsnr     pgsql               pingd
-</span><span class='line'>portblock     postfix         proftpd             rsyncd      scsi2reservation    sfex
-</span><span class='line'>symlink           syslog-ng       tomcat              vmware</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>AoEtarget           AudibleAlarm        CTDB                ClusterMon
+</span><span class='line'>Delay               Dummy               EvmsSCC             Evmsd
+</span><span class='line'>Filesystem          ICP                 IPaddr              IPaddr2
+</span><span class='line'>IPsrcaddr           IPv6addr            LVM                 LinuxSCSI
+</span><span class='line'>MailTo              ManageRAID          ManageVE            Pure-FTPd
+</span><span class='line'>Raid1               Route               SAPDatabase         SAPInstance
+</span><span class='line'>SendArp             ServeRAID           SphinxSearchDaemon  Squid
+</span><span class='line'>Stateful            SysInfo             VIPArip             VirtualDomain
+</span><span class='line'>WAS                 WAS6                WinPopup            Xen
+</span><span class='line'>Xinetd              anything            apache              conntrackd
+</span><span class='line'>db2                 drbd                eDir88              ethmonitor
+</span><span class='line'>exportfs            fio                 iSCSILogicalUnit    iSCSITarget
+</span><span class='line'>ids                 iscsi               jboss               lsyncd
+</span><span class='line'>lxc                 mysql               mysql-proxy         nfsserver
+</span><span class='line'>nginx               oracle              oralsnr             pgsql
+</span><span class='line'>pingd               portblock           postfix             proftpd
+</span><span class='line'>rsyncd              scsi2reservation    sfex                symlink
+</span><span class='line'>syslog-ng           tomcat              vmware</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Если нужен не хватает, можно написать свой. Написаны ресурс агенты на bash.</p>
+<p>Если нет нужного, можно написать свой. Написаны ресурс агенты на bash.­</p>
 
 <p>Приступим к добавлению ресурсов. Создадим к примеру следующую конфигурацию:</p>
 
@@ -564,6 +574,18 @@
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># crm
+</span><span class='line'>crm(live)# configure 
+</span><span class='line'>crm(live)configure# cib use new_conf
+</span><span class='line'>crm(new_conf)configure# edit</span></code></pre></td></tr></table></div></figure>
+
+
+<p>И приводим конфигурацию к следующему виде:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
@@ -588,53 +610,7 @@
 <span class='line-number'>26</span>
 <span class='line-number'>27</span>
 <span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-<span class='line-number'>39</span>
-<span class='line-number'>40</span>
-<span class='line-number'>41</span>
-<span class='line-number'>42</span>
-<span class='line-number'>43</span>
-<span class='line-number'>44</span>
-<span class='line-number'>45</span>
-<span class='line-number'>46</span>
-<span class='line-number'>47</span>
-<span class='line-number'>48</span>
-<span class='line-number'>49</span>
-<span class='line-number'>50</span>
-<span class='line-number'>51</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># crm
-</span><span class='line'>crm(live)# configure 
-</span><span class='line'>crm(live)configure# cib use new_conf
-</span><span class='line'>crm(new_conf)configure# primitive lsyncd ocf:heartbeat:lsyncd params cmdline_options="-log scarce"
-</span><span class='line'>crm(new_conf)configure# location lsyncd-on-node1 lsyncd 500: node1
-</span><span class='line'>crm(new_conf)configure# location lsyncd-on-node2 lsyncd 500: node2
-</span><span class='line'>crm(new_conf)configure# clone lsyncd-cl lsyncd 
-</span><span class='line'>INFO: resource references in location:lsyncd-on-node1 updated
-</span><span class='line'>INFO: resource references in location:lsyncd-on-node2 updated
-</span><span class='line'>crm(new_conf)configure# primitive nginx1 ocf:heartbeat:nginx
-</span><span class='line'>crm(new_conf)configure# location nginx1-on-node1 nginx1 inf: node1
-</span><span class='line'>crm(new_conf)configure# location nginx2-on-node2 nginx2 inf: node2
-</span><span class='line'>crm(new_conf)configure# primitive ipaddr_215 ocf:heartbeat:IPaddr2 params ip=10.10.0.215
-</span><span class='line'>crm(new_conf)configure# primitive ipaddr_216 ocf:heartbeat:IPaddr2 params ip=10.10.0.216
-</span><span class='line'>crm(new_conf)configure# location ip_215-on-node1 ipaddr_215 1000: node1
-</span><span class='line'>crm(new_conf)configure# location ip_215-on-node2 ipaddr_215 500: node2
-</span><span class='line'>crm(new_conf)configure# location ip_216-on-node2 ipaddr_216 1000: node2
-</span><span class='line'>crm(new_conf)configure# location ip_216-on-node1 ipaddr_216 500: node1
-</span><span class='line'>crm(new_conf)configure# commit
-</span><span class='line'>crm(new_conf)configure# cib use
-</span><span class='line'>crm(live)configure# cib commit new_conf 
-</span><span class='line'>INFO: commited 'new_conf' shadow CIB to the cluster
-</span><span class='line'>crm(live)configure# show
-</span><span class='line'>node node1
+</pre></td><td class='code'><pre><code class=''><span class='line'>node node1
 </span><span class='line'>node node2
 </span><span class='line'>primitive ipaddr_215 ocf:heartbeat:IPaddr2 \
 </span><span class='line'>        params ip="10.10.0.215"
@@ -664,8 +640,21 @@
 </span><span class='line'>        symmetric-cluster="false"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Для удбства написания конфигурации, можете набрать в crm(new_conf)configure# <em>edit</em>, открется редактор (в моём случае vim), и вставить вывод <em>crm(live)configure# show</em> прямо туда. После сохраняем и выходим.
-Теперь проверяем как всё запустилось:</p>
+<p>После выходим из редактора, и применяем конфигурацию на кластер:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>crm(new_conf)configure# commit
+</span><span class='line'>crm(new_conf)configure# cib use
+</span><span class='line'>crm(live)configure# cib commit new_conf 
+</span><span class='line'>INFO: commited 'new_conf' shadow CIB to the cluster
+</span><span class='line'>crm(live)configure# show</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь проверяем как всё запустилось:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -688,11 +677,7 @@
 <span class='line-number'>19</span>
 <span class='line-number'>20</span>
 <span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># crm_mon -fnr1
-</span><span class='line'>Last updated: Thu Jun 20 18:45:48 2013
-</span><span class='line'>Last change: Thu Jun 20 18:34:58 2013 via cibadmin on node1
 </span><span class='line'>Stack: cman
 </span><span class='line'>Current DC: node2 - partition with quorum
 </span><span class='line'>Version: 1.1.9-1512.el6-2a917dd
@@ -744,12 +729,8 @@
 <span class='line-number'>25</span>
 <span class='line-number'>26</span>
 <span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># crm node standby node1
-</span><span class='line'># # crm_mon -fnr1
-</span><span class='line'>Last updated: Thu Jun 20 18:47:47 2013
-</span><span class='line'>Last change: Thu Jun 20 18:46:51 2013 via crm_attribute on node1
+</span><span class='line'># crm_mon -fnr1
 </span><span class='line'>Stack: cman
 </span><span class='line'>Current DC: node2 - partition with quorum
 </span><span class='line'>Version: 1.1.9-1512.el6-2a917dd
@@ -827,11 +808,13 @@
 <span class='line-number'>21</span>
 <span class='line-number'>22</span>
 <span class='line-number'>23</span>
+<span class='line-number'>24</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># ps aux |grep nginx |grep -v grep
 </span><span class='line'>root     10796  0.0  0.4  96024  2040 ?        Ss   18:48   0:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
 </span><span class='line'>nginx    10798  0.0  0.5  96376  2708 ?        S    18:48   0:00 nginx: worker process                   
 </span><span class='line'># kill -KILL 10796 10798
 </span><span class='line'># crm_mon -fnr1
+</span><span class='line'>...
 </span><span class='line'>Node node1: online
 </span><span class='line'>        nginx1  (ocf::heartbeat:nginx): Started 
 </span><span class='line'>        ipaddr_215      (ocf::heartbeat:IPaddr2):       Started 
@@ -930,7 +913,7 @@
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">Установка и настройка Pacemaker</a>
+        <a href="/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">Установка и настройка кластера Pacemaker</a>
       </li>
     
       <li class="post">

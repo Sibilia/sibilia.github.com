@@ -162,7 +162,7 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>cp /etc/corosync/corosync.conf.example.udpu /etc/corosync/corosync.conf</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Я использую для связи между нодами клсатера unicast вместо multicast, на сеть нагрузки меньше, защита лучше. Редактируем конфиг для нашей ситауции. Для тонкой настройки рекомендую почитать man corosync.conf. Привожу конфиг /etc/corosync/corosync.conf:</p>
+<p>Я использую для связи между нодами клсатера unicast вместо multicast, на сеть нагрузки меньше, защита лучше. Редактируем конфиг для нашей ситауции. Для тонкой настройки рекомендую почитать <em>man corosync.conf</em>. Привожу конфиг /etc/corosync/corosync.conf:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -264,7 +264,7 @@
 
 <p>По поводу значения <em>ver:  1</em>, он указывает что сервис pacemaker мы будем запускать сами. Для начала оставим так, в дальнейшем его можно поменять на <em>ver:  0</em> тогда pacemaker будет запускаться сам после запуска кластера.</p>
 
-<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками её не практично, будем использовать ccs установленную ранее. Для начала пропишем имя кластеру и добавим ноды:</p>
+<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками его не практично, будем использовать установленную ранее <em>ccs</em>. Для начала пропишем имя кластеру и добавим ноды:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -364,7 +364,17 @@
 </span><span class='line'># scp /etc/cluster/cluster.conf node2:/etc/cluster/cluster.conf</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2. Пробуем запустить кластер. Выполняем на node1 и node2:</p>
+<p>Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2.</p>
+
+<p>Теперь можно запускать кластер, но перед этим ещё одно замечание.</p>
+
+<p>Первоначально, CMAN была написана для rgmanager и предполагает, что кластер не должен запускаться, пока нода не имеет кворума. Поэтому прежде чем пытаться запустить кластер, мы отключим эту особеннсть. Выполняем на node1 и node2:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># echo "CMAN_QUORUM_TIMEOUT=0" &gt;&gt; /etc/sysconfig/cman</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Теперь пробуем запустить кластер. Выполняем на node1 и node2:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -712,7 +722,7 @@
 </span><span class='line'>        symmetric-cluster="false"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>После выходим из редактора, и применяем конфигурацию на кластер:</p>
+<p>После выходим из редактора и применяем конфигурацию на кластер:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -915,7 +925,7 @@
 
 <h3>P.S.</h3>
 
-<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размешение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях, или пишите на почту.</p>
+<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или пишите на почту.</p>
 </div>
 
 

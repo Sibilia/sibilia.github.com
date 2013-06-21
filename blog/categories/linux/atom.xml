@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-21T14:13:01+03:00</updated>
+  <updated>2013-06-21T15:41:13+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -75,7 +75,7 @@ crmsh-1.2.5-55.6.x86_64
 </code>
 cp /etc/corosync/corosync.conf.example.udpu /etc/corosync/corosync.conf
 <code>
-Я использую для связи между нодами клсатера unicast вместо multicast, на сеть нагрузки меньше, защита лучше. Редактируем конфиг для нашей ситауции. Для тонкой настройки рекомендую почитать man corosync.conf. Привожу конфиг /etc/corosync/corosync.conf:
+Я использую для связи между нодами клсатера unicast вместо multicast, на сеть нагрузки меньше, защита лучше. Редактируем конфиг для нашей ситауции. Для тонкой настройки рекомендую почитать *man corosync.conf*. Привожу конфиг /etc/corosync/corosync.conf:
 </code></p>
 
 <h1>Please read the corosync.conf.5 manual page</h1>
@@ -145,7 +145,7 @@ END
 ```
 По поводу значения <em>ver:  1</em>, он указывает что сервис pacemaker мы будем запускать сами. Для начала оставим так, в дальнейшем его можно поменять на <em>ver:  0</em> тогда pacemaker будет запускаться сам после запуска кластера.</p>
 
-<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками её не практично, будем использовать ccs установленную ранее. Для начала пропишем имя кластеру и добавим ноды:
+<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками его не практично, будем использовать установленную ранее <em>ccs</em>. Для начала пропишем имя кластеру и добавим ноды:
 ```</p>
 
 <h1>ccs -f /etc/cluster/cluster.conf --createcluster my_cluster</h1>
@@ -226,8 +226,18 @@ END
 
 <h1>scp /etc/cluster/cluster.conf node2:/etc/cluster/cluster.conf</h1>
 
+<p>```
+Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2.</p></blockquote>
+
+<p>Теперь можно запускать кластер, но перед этим ещё одно замечание.</p>
+
+<p>Первоначально, CMAN была написана для rgmanager и предполагает, что кластер не должен запускаться, пока нода не имеет кворума. Поэтому прежде чем пытаться запустить кластер, мы отключим эту особеннсть. Выполняем на node1 и node2:
+```</p>
+
+<h1>echo "CMAN_QUORUM_TIMEOUT=0" >> /etc/sysconfig/cman</h1>
+
 <p><code>
-Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2. Пробуем запустить кластер. Выполняем на node1 и node2:
+Теперь пробуем запустить кластер. Выполняем на node1 и node2:
 </code></p>
 
 <h1>service cman start</h1>
@@ -277,7 +287,7 @@ END
    Joining fence domain...                                 [  OK  ]
 Starting Pacemaker Cluster Manager:                        [  OK  ]
 ```
-Снова проверяем /var/log/cluster/corosync.log. Там будет несколько warning по поводу отсутствующей конфигурации /var/lib/pacemaker/cib/cib.xml, но это нормально, мы её сейчас будем создавать.</p></blockquote>
+Снова проверяем /var/log/cluster/corosync.log. Там будет несколько warning по поводу отсутствующей конфигурации /var/lib/pacemaker/cib/cib.xml, но это нормально, мы её сейчас будем создавать.</p>
 
 <p>Проверяем состяние кластера:
 ```</p>
@@ -461,7 +471,7 @@ property $id="cib-bootstrap-options" \</p>
 </code></pre>
 
 <p><code>
-После выходим из редактора, и применяем конфигурацию на кластер:
+После выходим из редактора и применяем конфигурацию на кластер:
 </code>
 crm(new_conf)configure# commit
 crm(new_conf)configure# cib use
@@ -612,7 +622,7 @@ Node node1: online</p>
 
 <h3>P.S.</h3>
 
-<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размешение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях, или пишите на почту.</p>
+<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или пишите на почту.</p>
 ]]></content>
   </entry>
   

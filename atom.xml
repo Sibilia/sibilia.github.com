@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-21T02:11:19+03:00</updated>
+  <updated>2013-06-21T14:13:01+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -57,7 +57,7 @@
 <p>Приступим к установке:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># yum install pacemaker cman crmsh</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'># yum install pacemaker cman crmsh ccs</span></code></pre></td></tr></table></div></figure>
 
 
 <p>После завершения установки, у меня были следующие версии основных пакетов:</p>
@@ -190,7 +190,41 @@
 
 <p>По поводу значения <em>ver:  1</em>, он указывает что сервис pacemaker мы будем запускать сами. Для начала оставим так, в дальнейшем его можно поменять на <em>ver:  0</em> тогда pacemaker будет запускаться сам после запуска кластера.</p>
 
-<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf :</p>
+<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками её не практично, будем использовать ccs установленную ранее. Для начала пропишем имя кластеру и добавим ноды:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ccs -f /etc/cluster/cluster.conf --createcluster my_cluster
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addnode node1
+</span><span class='line'>Node node1 added.
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addnode node2
+</span><span class='line'>Node node2 added.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Затем, как написано в документации pacemaker:</p>
+
+<blockquote><p>Далее нам нужно научить CMAN как посылать запросы fencing для pacemaker. Мы прописываем это независимо от того, включен fencing в pacemaker, или нет.</p></blockquote>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># ccs -f /etc/cluster/cluster.conf --addfencedev pcmk agent=fence_pcmk
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addmethod pcmk-redirect node1
+</span><span class='line'>Method pcmk-redirect added to node1.
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addmethod pcmk-redirect node2
+</span><span class='line'>Method pcmk-redirect added to node2.
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addfenceinst pcmk node1 pcmk-redirect port=node1
+</span><span class='line'># ccs -f /etc/cluster/cluster.conf --addfenceinst pcmk node2 pcmk-redirect port=node2</span></code></pre></td></tr></table></div></figure>
+
+
+<p>После смотрим что у нас получилось, проверяем синтаксис с помощью <em>ccs_config_validate</em> и копируем этот конфиг на вторую ноду.</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -200,22 +234,60 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&lt;?xml version="1.0"?&gt;
-</span><span class='line'>&lt;cluster config_version="1" name="my_cluster"&gt;
-</span><span class='line'>  &lt;logging debug="off"/&gt;
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># cat /etc/cluster/cluster.conf
+</span><span class='line'>&lt;cluster config_version="8" name="my_cluster"&gt;
+</span><span class='line'>  &lt;fence_daemon/&gt;
 </span><span class='line'>  &lt;clusternodes&gt;
-</span><span class='line'>    &lt;clusternode name="node1" nodeid="1"/&gt;
-</span><span class='line'>    &lt;clusternode name="node2" nodeid="2"/&gt;
+</span><span class='line'>    &lt;clusternode name="node1" nodeid="1"&gt;
+</span><span class='line'>      &lt;fence&gt;
+</span><span class='line'>        &lt;method name="pcmk-redirect"&gt;
+</span><span class='line'>          &lt;device name="pcmk" port="node1"/&gt;
+</span><span class='line'>        &lt;/method&gt;
+</span><span class='line'>      &lt;/fence&gt;
+</span><span class='line'>    &lt;/clusternode&gt;
+</span><span class='line'>    &lt;clusternode name="node2" nodeid="2"&gt;
+</span><span class='line'>      &lt;fence&gt;
+</span><span class='line'>        &lt;method name="pcmk-redirect"&gt;
+</span><span class='line'>          &lt;device name="pcmk" port="node2"/&gt;
+</span><span class='line'>        &lt;/method&gt;
+</span><span class='line'>      &lt;/fence&gt;
+</span><span class='line'>    &lt;/clusternode&gt;
 </span><span class='line'>  &lt;/clusternodes&gt;
-</span><span class='line'>&lt;/cluster&gt;</span></code></pre></td></tr></table></div></figure>
-
-
-<p>После проверяем правильность конфигурационного файла cluster.conf:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'># ccs_config_validate
-</span><span class='line'>Configuration validates</span></code></pre></td></tr></table></div></figure>
+</span><span class='line'>  &lt;cman/&gt;
+</span><span class='line'>  &lt;fencedevices&gt;
+</span><span class='line'>    &lt;fencedevice agent="fence_pcmk" name="pcmk"/&gt;
+</span><span class='line'>  &lt;/fencedevices&gt;
+</span><span class='line'>  &lt;rm&gt;
+</span><span class='line'>    &lt;failoverdomains/&gt;
+</span><span class='line'>    &lt;resources/&gt;
+</span><span class='line'>  &lt;/rm&gt;
+</span><span class='line'>&lt;/cluster&gt;
+</span><span class='line'># ccs_config_validate
+</span><span class='line'>Configuration validates
+</span><span class='line'># scp /etc/cluster/cluster.conf node2:/etc/cluster/cluster.conf</span></code></pre></td></tr></table></div></figure>
 
 
 <p>Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2. Пробуем запустить кластер. Выполняем на node1 и node2:</p>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: cluster | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/cluster/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-21T02:11:19+03:00</updated>
+  <updated>2013-06-21T14:13:01+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -54,7 +54,7 @@ wget -O /etc/yum.repos.d/ha-clustering.repo http://download.opensuse.org/reposit
 <p>Приступим к установке:
 ```</p>
 
-<h1>yum install pacemaker cman crmsh</h1>
+<h1>yum install pacemaker cman crmsh ccs</h1>
 
 <p><code>
 После завершения установки, у меня были следующие версии основных пакетов:
@@ -145,27 +145,88 @@ END
 ```
 По поводу значения <em>ver:  1</em>, он указывает что сервис pacemaker мы будем запускать сами. Для начала оставим так, в дальнейшем его можно поменять на <em>ver:  0</em> тогда pacemaker будет запускаться сам после запуска кластера.</p>
 
-<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf :
+<p>Для CMAN необходим ещё один конфигурационный файл /etc/cluster/cluster.conf. Он имеет формат xml. Писать ручками её не практично, будем использовать ccs установленную ранее. Для начала пропишем имя кластеру и добавим ноды:
+```</p>
+
+<h1>ccs -f /etc/cluster/cluster.conf --createcluster my_cluster</h1>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addnode node1</h1>
+
+<p>Node node1 added.</p>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addnode node2</h1>
+
+<p>Node node2 added.
 ```
-&lt;?xml version="1.0"?>
-<cluster config_version="1" name="my_cluster">
-  <logging debug="off"/>
+Затем, как написано в документации pacemaker:</p>
+
+<blockquote><p>Далее нам нужно научить CMAN как посылать запросы fencing для pacemaker. Мы прописываем это независимо от того, включен fencing в pacemaker, или нет.
+```</p>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addfencedev pcmk agent=fence_pcmk</h1>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addmethod pcmk-redirect node1</h1>
+
+<p>Method pcmk-redirect added to node1.</p>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addmethod pcmk-redirect node2</h1>
+
+<p>Method pcmk-redirect added to node2.</p>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addfenceinst pcmk node1 pcmk-redirect port=node1</h1>
+
+<h1>ccs -f /etc/cluster/cluster.conf --addfenceinst pcmk node2 pcmk-redirect port=node2</h1>
+
+<p><code>
+После смотрим что у нас получилось, проверяем синтаксис с помощью *ccs_config_validate* и копируем этот конфиг на вторую ноду.
+</code></p>
+
+<h1>cat /etc/cluster/cluster.conf</h1>
+
+<p><cluster config_version="8" name="my_cluster">
+  <fence_daemon/>
   <clusternodes></p>
 
-<pre><code>&lt;clusternode name="node1" nodeid="1"/&gt;
-&lt;clusternode name="node2" nodeid="2"/&gt;
+<pre><code>&lt;clusternode name="node1" nodeid="1"&gt;
+  &lt;fence&gt;
+    &lt;method name="pcmk-redirect"&gt;
+      &lt;device name="pcmk" port="node1"/&gt;
+    &lt;/method&gt;
+  &lt;/fence&gt;
+&lt;/clusternode&gt;
+&lt;clusternode name="node2" nodeid="2"&gt;
+  &lt;fence&gt;
+    &lt;method name="pcmk-redirect"&gt;
+      &lt;device name="pcmk" port="node2"/&gt;
+    &lt;/method&gt;
+  &lt;/fence&gt;
+&lt;/clusternode&gt;
 </code></pre>
 
 <p>  </clusternodes>
-</cluster>
-<code>
-После проверяем правильность конфигурационного файла cluster.conf:
-</code></p>
+  <cman/>
+  <fencedevices></p>
+
+<pre><code>&lt;fencedevice agent="fence_pcmk" name="pcmk"/&gt;
+</code></pre>
+
+<p>  </fencedevices>
+  <rm></p>
+
+<pre><code>&lt;failoverdomains/&gt;
+&lt;resources/&gt;
+</code></pre>
+
+<p>  </rm>
+</cluster></p>
 
 <h1>ccs_config_validate</h1>
 
-<p>Configuration validates
-<code>
+<p>Configuration validates</p>
+
+<h1>scp /etc/cluster/cluster.conf node2:/etc/cluster/cluster.conf</h1>
+
+<p><code>
 Всё отлично. Повторяем все предыдущие шаги на node2. Теперь мы имеем подготовленные node1 и node2. Пробуем запустить кластер. Выполняем на node1 и node2:
 </code></p>
 
@@ -216,7 +277,7 @@ END
    Joining fence domain...                                 [  OK  ]
 Starting Pacemaker Cluster Manager:                        [  OK  ]
 ```
-Снова проверяем /var/log/cluster/corosync.log. Там будет несколько warning по поводу отсутствующей конфигурации /var/lib/pacemaker/cib/cib.xml, но это нормально, мы её сейчас будем создавать.</p>
+Снова проверяем /var/log/cluster/corosync.log. Там будет несколько warning по поводу отсутствующей конфигурации /var/lib/pacemaker/cib/cib.xml, но это нормально, мы её сейчас будем создавать.</p></blockquote>
 
 <p>Проверяем состяние кластера:
 ```</p>

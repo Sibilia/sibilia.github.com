@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-21T15:41:13+03:00</updated>
+  <updated>2013-07-01T16:09:31+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -428,7 +428,7 @@ wget -O /usr/lib/ocf/resource.d/heartbeat/lsyncd https://raw.github.com/Sibilia/
 crm(live)configure# cib use new_conf
 crm(new_conf)configure# edit
 <code>
-И приводим конфигурацию к следующему виде:
+И приводим конфигурацию к следующему виуу:
 </code>
 node node1
 node node2
@@ -613,7 +613,7 @@ Node node1: online</p>
 </code></pre>
 
 <p><code>
-Появилась запись что были ошибки. Если же ресурс не может запуститься, или слишком часто вылетает, то значение счётчика fail-count выставляется в 1000000 и после этого этот ресурс на этой ноде не будет востонавливаться. Для сброса счётчика можно сделать:
+Появилась запись что были ошибки. Если же ресурс не может запуститься, или слишком часто вылетает, то значение счётчика fail-count выставляется в 1000000 и после этого этот ресурс на этой ноде не будет восстонавливаться. А для сброса счётчика можно сделать:
 </code></p>
 
 <h1>crm resource cleanup nginx1</h1>
@@ -622,7 +622,7 @@ Node node1: online</p>
 
 <h3>P.S.</h3>
 
-<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или пишите на почту.</p>
+<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или дишите на почту.</p>
 ]]></content>
   </entry>
   

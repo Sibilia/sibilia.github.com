@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-06-21T15:41:13+03:00</updated>
+  <updated>2013-07-01T16:09:31+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -588,7 +588,7 @@
 </span><span class='line'>crm(new_conf)configure# edit</span></code></pre></td></tr></table></div></figure>
 
 
-<p>И приводим конфигурацию к следующему виде:</p>
+<p>И приводим конфигурацию к следующему виуу:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -843,7 +843,7 @@
 </span><span class='line'>    nginx1_monitor_5000 (node=node1, call=276, rc=7, status=complete): not running</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Появилась запись что были ошибки. Если же ресурс не может запуститься, или слишком часто вылетает, то значение счётчика fail-count выставляется в 1000000 и после этого этот ресурс на этой ноде не будет востонавливаться. Для сброса счётчика можно сделать:</p>
+<p>Появилась запись что были ошибки. Если же ресурс не может запуститься, или слишком часто вылетает, то значение счётчика fail-count выставляется в 1000000 и после этого этот ресурс на этой ноде не будет восстонавливаться. А для сброса счётчика можно сделать:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'># crm resource cleanup nginx1</span></code></pre></td></tr></table></div></figure>
@@ -851,7 +851,7 @@
 
 <h3>P.S.</h3>
 
-<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или пишите на почту.</p>
+<p>Это лишь самые базовые возможности Pacemaker. Есть ещё очерёдность запуска (order), совместное размещение (colocation), группы и т.д. Если есть какие замечания, пожелания, неточности в статье, оставляйте в комментариях или дишите на почту.</p>
 ]]></content>
   </entry>
   

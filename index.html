@@ -9,7 +9,7 @@
   <meta name="author" content="Ilia Sibiryatkin">
 
   
-  <meta name="description" content="Для построения кластеров high availability (высокой доступности) я в своей работе использую Pacemaker. Он себя хорошо зарекомендовал на многих &hellip;">
+  <meta name="description" content="В этой статье я рассмотрю установку и настройку распределённой файловой системы с использованием DRBD. Данное решение может применяться для ряда &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,55 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd/">Репликация дисков по сети с помощью DRBD</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-10T16:13:00+03:00" pubdate data-updated="true">Jul 10<span>th</span>, 2013</time>
+        
+         | <a href="/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>В этой статье я рассмотрю установку и настройку распределённой файловой системы с использованием DRBD. Данное решение может применяться для ряда задач в кластерах высокой доступности (High Availability). Для начала, разъясним понятие DRBD:
+<img class="center" src="/images/DRBD.gif" width="350" height="350" title="DRBD" alt="DRBD"></p>
+
+<blockquote><p>DRBD (от англ. Distributed Replicated Block Device — «Распределённое Копируемое Блочное Устройство») — это блочное устройство, обеспечивающее синхронизацию (RAID1) между локальным блочным устройством и удалённым.</p></blockquote>
+
+
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -532,6 +581,10 @@ New drbd meta data block successfully created.
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd/">Репликация дисков по сети с помощью DRBD</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">Установка и настройка кластера Pacemaker</a>
       </li>
     
@@ -545,10 +598,6 @@ New drbd meta data block successfully created.
     
       <li class="post">
         <a href="/blog/2013/03/26/sinkhronizatsiia-failov-s-pomoshchiu-lsyncd-i-unison/">Синхронизация файлов с помощью Lsyncd и Unison</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/">Установка crm shell в Pacemaker</a>
       </li>
     
   </ul>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: linux | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/linux/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-07-01T16:09:31+03:00</updated>
+  <updated>2013-07-11T21:01:06+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -12,6 +12,394 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Репликация дисков по сети с помощью DRBD]]></title>
+    <link href="http://Sibilia.github.com/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd/"/>
+    <updated>2013-07-10T16:13:00+03:00</updated>
+    <id>http://Sibilia.github.com/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd</id>
+    <content type="html"><![CDATA[<p>В этой статье я рассмотрю установку и настройку распределённой файловой системы с использованием DRBD. Данное решение может применяться для ряда задач в кластерах высокой доступности (High Availability). Для начала, разъясним понятие DRBD:
+<img class="center" src="/images/DRBD.gif" width="350" height="350" title="DRBD" alt="DRBD">
+<blockquote><p>DRBD (от англ. Distributed Replicated Block Device — «Распределённое Копируемое Блочное Устройство») — это блочное устройство, обеспечивающее синхронизацию (RAID1) между локальным блочным устройством и удалённым.</p></blockquote></p>
+
+<!--more-->
+
+
+<h3>Подготовка</h3>
+
+<p>Эта статья будет продолжением предыдущей <a href="http://sibilia.github.io/blog/2013/06/20/ustanovka-i-nastroika-pacemaker/">статьи</a>, однако это не является полностью обязательным требованием. В частности, перед началом установки из предыдущей статьи нужен раздел "Подготовка". Так же я буду использовать из предыдущей статьи имена нод и их ip адреса.</p>
+
+<p>Так же нам потребуется дополнительно два диска (или раздела), по одному на ноду, на которых мы и будем собирать DRBD. Подготовьте их самостоятельно. У меня в статье они будут фигурировать под именами /dev/sdb.</p>
+
+<h3>Установка</h3>
+
+<p>Если посмотреть на <a href="http://www.drbd.org/">сайте разрабтчиков</a>, то там есть несколько активных версий drbd. Основные стабильные сейчас - 8.3.x и 8.4.x. Ситуация с пакетами rpm немного сложная. Я начну с рецепта сборки из исходников, а потом приведу способ загрузки собранных пакетов на "elrepo" и выложу свою сборку.</p>
+
+<h4>Сборка из исходников</h4>
+
+<p>Итак приступим. Я остановился на версии 8.4.х. Сборку рекомендую проводить на отдельной ноде, чтоб не засорять основные сервера. Подготавливаем инструменты для сборки и окружение:
+<code>
+yum install gcc rpm-build make flex kernel kernel-headers kernel-devel
+mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+</code>
+Загружаем исходники и собираем:
+<code>
+cd /usr/src/
+wget http://oss.linbit.com/drbd/8.4/drbd-8.4.3.tar.gz
+tar -xzf drbd-8.4.3.tar.gz
+cd drbd-8.4.3/
+./configure --with-km
+make rpm
+KDIR=/usr/src/kernels/2.6.32-358.11.1.el6.x86_64/ make km-rpm
+</code>
+Здесь основной момент в том, что мы собираем не только сам drbd на и его модуль для ядра.
+Если всё отлично, то после последней команды мы увидим примерно это:
+<code>
+...
++ exit 0
+You have now:
+/root/rpmbuild/RPMS/x86_64/drbd-udev-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-km-2.6.32_358.11.1.el6.x86_64-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-xen-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-heartbeat-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-debuginfo-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-km-debuginfo-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-utils-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-pacemaker-8.4.3-2.el6.x86_64.rpm
+/root/rpmbuild/RPMS/x86_64/drbd-bash-completion-8.4.3-2.el6.x86_64.rpm
+</code>
+Теперь можно приступать непосредственно к установке этих пакетов. Пакеты содержащие в имени debuginfo не обязательны к установке.
+<code>
+yum install /root/rpmbuild/RPMS/x86_64/drbd-*.rpm
+</code>
+Все собранные пакеты я любезно упаковал в <a href="http://sibilia.github.io/download/drbd-8.4.3.rpm.tar.gz">этот</a> архив.</p>
+
+<h4>Установка из репозитория "elrepo"</h4>
+
+<p>Тут сложного ничего нет, подключаем репозиторий, и ставим.
+<code>
+rpm -Uvh http://elrepo.org/elrepo-release-6-5.el6.elrepo.noarch.rpm
+yum install --enablerepo=elrepo drbd84-utils kmod-drbd84
+</code>
+Однако, стоит заметить что в этом репозитории отсутствуют некоторые пакеты. В частности полезным является <em>drbd-pacemaker</em>, который устанавливает фирменные ресурс агенты от linbit для pacemaker.</p>
+
+<p>Я использовал способ сборки из исходников. Учитывайте этот момент в дальнейшем, если вы ставили из "elrepo"</p>
+
+<p>Теперь можно приступать к настройке.</p>
+
+<h3>Настройка</h3>
+
+<p>Начнём с глобального конфигурационного файла <em>/etc/drbd.d/global_common.conf</em>. В нём прописываются параметры общие для всех <em>ресурсов</em>. Приведу пример (за подрбнастями как обычно в <em>man drbd.conf</em>):
+```
+global {
+}
+common {</p>
+
+<pre><code>net {
+    protocol C;
+
+    after-sb-0pri discard-younger-primary;
+    after-sb-1pri discard-secondary;
+    after-sb-2pri disconnect;
+}
+</code></pre>
+
+<p>}
+```
+Здесь параметр <em>protocol C</em> обозначает что операция записи считается завершённой, когда и локальный, и сетевой диски сообщают об успешном завершении записи. А параметры начинающиеся на <em>after-sb</em> определяют действия при Split brain, полезно для автоматического восстановления при мелких неполадках.</p>
+
+<p>Теперь приступим к созданию конфигурационного файла ресурса drbd. В нём прописывается имя ресурса, устройство, и сетевой адрес. Конфигурационные файлы ресурсов хранятся в /etc/drbd.d/<name_res>.res</p>
+
+<p>Вот к примеру мой /etc/drbd.d/r0.res:
+```
+resource r0 {
+  volume 0 {</p>
+
+<pre><code>device    /dev/drbd1;
+disk      /dev/sdb;
+meta-disk internal;
+</code></pre>
+
+<p>  }
+  on node1 {</p>
+
+<pre><code>address   10.10.0.210:7789;
+</code></pre>
+
+<p>  }
+  on node2 {</p>
+
+<pre><code>address   10.10.0.211:7789;
+</code></pre>
+
+<p>  }
+}
+```
+Здесь <em>device /dev/drbd1</em> это устрйство drbd которое автоматически создастся. В дальнейшем с ним и будем работаем.</p>
+
+<p>При создании нового ресурса, первым шагом необходимо создать метаданные для диска. Выполняем на node1 и node2:
+```</p>
+
+<h1>drbdadm create-md r0</h1>
+
+<p>Writing meta data...
+initializing activity log
+NOT initializing bitmap
+New drbd meta data block successfully created.
+success
+<code>
+Теперь подгружаем модуль для ядра и поднимаем наш ресурс:
+</code>
+modprobe drbd
+drbdadm up r0
+<code>
+Теперь проверяем состояние диска drbd. Это можно делать двумя способами: *drbd-overview* и *cat /proc/drbd*. Разница лишь в том, что второй способ более информативный.
+</code></p>
+
+<h1>cat /proc/drbd</h1>
+
+<p> 1: cs:Connected ro:Secondary/Secondary ds:Inconsistent/Inconsistent C r-----</p>
+
+<pre><code>ns:0 nr:0 dw:0 dr:0 al:0 bm:0 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:1048508
+</code></pre>
+
+<p><code>
+*ds:Inconsistent/Inconsistent* - это состояние синхрнизации. На данном этапе это нормальное состояние, просто drbd не разобрался ещё кто главный. Поможем ему, выполняем на любой ноде (к примеру на node1) и смотрим сново состояние:
+</code></p>
+
+<h1>drbdadm primary --force r0</h1>
+
+<h1>cat /proc/drbd</h1>
+
+<p> 1: cs:SyncSource ro:Primary/Secondary ds:UpToDate/Inconsistent C r-----</p>
+
+<pre><code>ns:680960 nr:0 dw:0 dr:681624 al:0 bm:41 lo:0 pe:3 ua:0 ap:0 ep:1 wo:f oos:370620
+    [===========&gt;........] sync'ed: 64.9% (370620/1048508)K
+    finish: 0:00:03 speed: 96,840 (96,840) K/sec
+</code></pre>
+
+<h1>cat /proc/drbd</h1>
+
+<p> 1: cs:Connected ro:Primary/Secondary ds:UpToDate/UpToDate C r-----</p>
+
+<pre><code>ns:1048508 nr:0 dw:0 dr:1049172 al:0 bm:64 lo:0 pe:0 ua:0 ap:0 ep:1 wo:f oos:0
+</code></pre>
+
+<p>```
+Устройство drbd готово к использованию.</p>
+
+<p>У DRBD есть два режима работы: Active-Pacive и Active-Active.</p>
+
+<h4>Режим Active-Pacive</h4>
+
+<p>Начнём с примера настройки режима Active-Pacive, как более простого. В нём одна нода доступна для чтения и записи, а вторая недоступна вовсе, однако она постоянно синхронизируется на блочном уровне. Так как доступна только одна, то нет необходимости использовать кластерные файловые системы (об этом ниже). Мы будем использовать ext4.</p>
+
+<p>Создаём точку монтирования, файловую систему, монтируем (выполняем на ноде которая в данный момент primary):
+<code>
+mkdir /mnt/data
+mkfs.ext4 /dev/drbd1
+mount /dev/drbd1 /mnt/data/
+</code>
+Приступим к интеграции drbd с нашим кластером pacemaker.</p>
+
+<p>Перед добавлением drbd в конфигурацию pacemaker, останавливаем ресурс drbd:
+<code>
+umount /mnt/data
+drbdadm down r0
+</code>
+Добавляем ресурс для drbd в pacemaker (не забываем запустить кластер перед этим, если он был остановлен):
+```</p>
+
+<h1>crm</h1>
+
+<p>crm(live)# configure
+crm(live)configure# edit
+<code>
+Приведу лишь часть конфига которую добавляем для drbd:
+</code>
+...
+primitive drbd_data ocf:linbit:drbd \</p>
+
+<pre><code>    params drbd_resource="r0"
+</code></pre>
+
+<p>primitive fs-data ocf:heartbeat:Filesystem \</p>
+
+<pre><code>    params device="/dev/drbd1" directory="/mnt/data" fstype="ext4" \
+    meta target-role="Started"
+</code></pre>
+
+<p>ms ms_drbd_data drbd_data \</p>
+
+<pre><code>    meta master-max="1" master-node-max="1" clone-max="2" clone-node-max="1" notify="true"
+</code></pre>
+
+<p>location fs-data_on_node1 fs-data 1000: node1
+location fs-data_on_node2 fs-data 1000: node2
+location ms_drbd_data_on_node1 ms_drbd_data 1000: node1
+location ms_drbd_data_on_node2 ms_drbd_data 1000: node2
+colocation drbd_fs-data inf: ms_drbd_data:Master fs-data
+order fs-data_after_drbd inf: ms_drbd_data:promote fs-data:start
+...
+```
+<em>ms</em> используется для Master/Slave ресурсов. Ещё обязательно прописываем <em>order</em> для очерёдности запуска и <em>colocation</em> для обозначения что файловая система подниматся там где у нас Primary drbd.</p>
+
+<p>Теперь применяем конфигурацию и смотрим состояние кластера:
+```
+crm(live)configure# commit</p>
+
+<h1>crm_mon -fnr</h1>
+
+<p>Node node1: online</p>
+
+<pre><code>    fs-data (ocf::heartbeat:Filesystem):    Started
+    nginx1  (ocf::heartbeat:nginx): Started
+    ipaddr_215      (ocf::heartbeat:IPaddr2):       Started
+    lsyncd:1        (ocf::heartbeat:lsyncd):        Started
+    drbd_data:1     (ocf::linbit:drbd):     Master
+</code></pre>
+
+<p>Node node2: online</p>
+
+<pre><code>    nginx2  (ocf::heartbeat:nginx): Started
+    lsyncd:0        (ocf::heartbeat:lsyncd):        Started
+    ipaddr_216      (ocf::heartbeat:IPaddr2):       Started
+    drbd_data:0     (ocf::linbit:drbd):     Started
+</code></pre>
+
+<p>Inactive resources:</p>
+
+<p>Migration summary:
+* Node node2:
+* Node node1:
+```
+Всё отлично. На этом настройка drbd в режиме Active-Pacive закончена.</p>
+
+<h4>Режим Active-Active</h4>
+
+<p>Тут всё немного усложняется тем, что нам уже нужно использовать клсатерные файловые системы. Я приведу пример настройки GFS2.</p>
+
+<p>Для начала нужно изменить конфигурацию drbd, разрешив режим active-active. Привожу изменённый файл <em>/etc/drbd.d/global_common.conf</em>:
+```
+global {
+}
+common {</p>
+
+<pre><code>net {
+    protocol C;
+
+    allow-two-primaries;
+
+    after-sb-0pri discard-younger-primary;
+    after-sb-1pri discard-secondary;
+    after-sb-2pri disconnect;
+}
+</code></pre>
+
+<p>}
+<code>
+Устанавливаем необходимые пакеты для gfs2:
+</code>
+yum install gfs2-utils gfs2-cluster
+```
+Так же для gfs2 нужен <em>cman</em>, но он у нас установлен ещё в предыдущей статье, как и настроен его конфиг /etc/cluster/cluster.conf.</p>
+
+<p>Создаём файловую систему gfs2 на диске drbd (на той, что primary):
+```</p>
+
+<h1>mkfs.gfs2 -p lock_dlm -j 2 -t my_cluster:data /dev/drbd1</h1>
+
+<p>This will destroy any data on /dev/drbd1.
+It appears to contain: Linux rev 1.0 ext4 filesystem data (extents) (large files) (huge files)</p>
+
+<p>Are you sure you want to proceed? [y/n] y</p>
+
+<p>Device:                    /dev/drbd1
+Blocksize:                 4096
+Device Size                1.00 GB (262127 blocks)
+Filesystem Size:           1.00 GB (262125 blocks)
+Journals:                  2
+Resource Groups:           4
+Locking Protocol:          "lock_dlm"
+Lock Table:                "my_cluster:data"
+UUID:                      78a43254-2c97-1116-5328-3a313ff433f3
+<code>
+По поводу параметров: *-j 2* указывает что создавать надо два журнала, *-t my_cluster:data* указываем имя кластера (он прописан в /etc/cluster/cluster.conf) и имя таблицы блокировок.
+Отлично, файловая система готова. Останавливаем drbd и правим конфигурацию кластера (Опять же привожу лишь часть для drbd):
+</code>
+drbdadm down r0
+crm
+crm(live)# configure
+crm(live)configure# edit
+<code>
+</code>
+...
+primitive drbd_data ocf:linbit:drbd \</p>
+
+<pre><code>    params drbd_resource="r0"
+</code></pre>
+
+<p>primitive fs-data ocf:heartbeat:Filesystem \</p>
+
+<pre><code>    params device="/dev/drbd1" directory="/mnt/data" fstype="gfs2" \
+    meta target-role="Started"
+</code></pre>
+
+<p>ms ms_drbd_data drbd_data \</p>
+
+<pre><code>    meta master-max="2" master-node-max="1" clone-max="2" clone-node-max="1" notify="true"
+</code></pre>
+
+<p>clone fs-data_clone fs-data \</p>
+
+<pre><code>    params clone-max="2" clone-node-max="1"
+</code></pre>
+
+<p>location fs-data_on_node1 fs-data_clone 1000: node1
+location fs-data_on_node2 fs-data_clone 1000: node2
+location ms_drbd_data_on_node1 ms_drbd_data 1000: node1
+location ms_drbd_data_on_node2 ms_drbd_data 1000: node2
+colocation drbd_fs-data inf: ms_drbd_data:Master fs-data_clone
+order fs-data_after_drbd inf: ms_drbd_data:promote fs-data_clone:start
+...
+```
+Отличия от active-slave в том, что мы указываем <em>master-max="2"</em> и само сабой <em>fstype="gfs2"</em>. Так же я добавил <em>clone</em> для <em>fs-data</em>.</p>
+
+<p>Чтож, посмтрим что у нас вышло:
+```</p>
+
+<h1>crm_mon -1</h1>
+
+<p>...
+Online: [ node1 node2 ]</p>
+
+<p> ipaddr_215     (ocf::heartbeat:IPaddr2):       Started node1
+ ipaddr_216     (ocf::heartbeat:IPaddr2):       Started node2
+ nginx1 (ocf::heartbeat:nginx): Started node1
+ nginx2 (ocf::heartbeat:nginx): Started node2
+ Clone Set: lsyncd-cl [lsyncd]</p>
+
+<pre><code> Started: [ node1 node2 ]
+</code></pre>
+
+<p> Master/Slave Set: ms_drbd_data [drbd_data]</p>
+
+<pre><code> Masters: [ node1 node2 ]
+</code></pre>
+
+<p> Clone Set: fs-data_clone [fs-data]</p>
+
+<pre><code> Started: [ node1 node2 ]
+</code></pre>
+
+<h1>drbd-overview</h1>
+
+<p>  1:r0/0  Connected Primary/Primary UpToDate/UpToDate C r----- /mnt/data gfs2 1.0G 259M 766M 26%
+```
+Вот в принципе и всё. По поводу решения некоторых проблем с drbd я делал заметку <a href="http://sibilia.github.io/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">тут</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Установка и настройка кластера Pacemaker]]></title>
@@ -833,78 +1221,6 @@ crm configure location loc-lsyncd-on-node1 lsyncd-node1 inf: node1
 </code>
 На втором сервере делаем соответствующие поправки.
 Вот в принципе и всё. Данное решение синхронизации хорошо себя показало на высоких нагрузках. Если есть вопросы, я постораюсь помочь.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Установка crm shell в Pacemaker]]></title>
-    <link href="http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker/"/>
-    <updated>2013-03-14T14:36:00+03:00</updated>
-    <id>http://Sibilia.github.com/blog/2013/03/14/ustanovka-crm-shell-v-pacemaker</id>
-    <content type="html"><![CDATA[<p>В начале марта в проекте Pacemaker произошли некоторые изменения, в частности был вырезан crm shell начиная с версии pacemaker-1.1.7.
-<blockquote><p>Since late-April, the crm shell is no longer included in the Pacemaker source tree. This change was made at the author's request as it is now maintained as a separate project.</p><footer><strong>ClusterLabs</strong> <cite><a href='https://github.com/ClusterLabs/pacemaker#important-information-about-the-crm-shell'>Important Information About the Crm Shell</a></cite></footer></blockquote></p>
-
-<!-- more -->
-
-
-<p>Это довольно печально, так как crm shell очень удобный инструмент для ручного управления кластером. Для его добавления необходимо доустановить пакеты "crmsh" и "pssh". Скачать их можно с репозитория <a href="http://download.opensuse.org/repositories/network:/ha-clustering/">crm shell</a>.
-Для CentOS 6 x86-64 достаточно следующее:
-<code>
-yum install pacemaker corosync
-cd /tmp
-wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/crmsh-1.2.5-55.2.x86_64.rpm
-wget http://download.opensuse.org/repositories/network:/ha-clustering/CentOS_CentOS-6/x86_64/pssh-2.3.1-15.1.x86_64.rpm
-yum install ./crmsh*.rpm ./pssh*.rpm
-</code>
-На данный момент пакетов crmsh и pssh отсутствуют в официальных репозитариях RedHat/CentOS и в EPEL. Быть может в скором времени их туда добавят, или clusterlabs уладят совместимость.</p>
-
-<h3>P.S.</h3>
-
-<p>Вот кстати мой скрипт для отчистки failcount в выводе crm_mon -fnr. Это порой необходимо для востановления кластера после сбоя и обнуления счётчиков.
-<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span> (corosync_clear)</span> <a href='/downloads/code/corosync_clear'>download</a></figcaption>
- <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/bash</span>
-</span><span class='line'><span class="c"># Если значение failcount=1000000 у ресурса, то сбрасывается его состояние (crm resource cleanup &lt;res&gt;).</span>
-</span><span class='line'><span class="c">#</span>
-</span><span class='line'><span class="c"># Author: Ilia Sibiryatkin &lt;Sibvilian@gmail.com&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="nv">NODE</span><span class="o">=</span><span class="sb">`</span>crm_node -l |cut -d<span class="s1">&#39; &#39;</span> -f 2<span class="sb">`</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">for </span>STR in <span class="k">$(</span>crm_mon -f1 | grep fail-count| awk <span class="s1">&#39;{ print $1 &quot;@&quot; $3 }&#39;</span><span class="k">)</span> ; <span class="k">do</span>
-</span><span class='line'><span class="k">	</span><span class="nv">RES</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($1,0,length($1)-1))}&#39;</span><span class="k">)</span>
-</span><span class='line'>        <span class="nv">FAIL</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$STR</span> |awk <span class="s1">&#39;BEGIN {FS=&quot;@&quot;}{print (substr($2,12,length($2)))}&#39;</span><span class="k">)</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="k">if</span> <span class="o">[[</span> <span class="nv">$FAIL</span> <span class="o">==</span> 1000000 <span class="o">]]</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;cleanup $RES&quot;</span>
-</span><span class='line'>                crm resource cleanup <span class="nv">$RES</span>
-</span><span class='line'>        <span class="k">else</span>
-</span><span class='line'><span class="k">                </span><span class="nb">echo</span> <span class="s2">&quot;clear fail-count $RES&quot;</span>
-</span><span class='line'>                <span class="k">for </span>i in <span class="nv">$NODE</span> ; <span class="k">do</span>
-</span><span class='line'><span class="k">                        </span>crm resource failcount <span class="nv">$RES</span> delete <span class="nv">$i</span>
-</span><span class='line'>                <span class="k">done </span>
-</span><span class='line'><span class="k">        fi</span>
-</span><span class='line'><span class="k">done</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 ]]></content>
   </entry>
   

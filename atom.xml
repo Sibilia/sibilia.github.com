@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-07-11T21:04:50+03:00</updated>
+  <updated>2013-07-11T21:06:45+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -104,7 +104,7 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>yum install /root/rpmbuild/RPMS/x86_64/drbd-*.rpm</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Все собранные пакеты я любезно упаковал в <a href="http://sibilia.github.io/download/drbd-8.4.3.rpm.tar.gz">этот</a> архив.</p>
+<p>Все собранные пакеты я любезно упаковал в <a href="https://www.dropbox.com/s/s28f85rr950rlpi/drbd-8.4.3.rpm.tar.gz">этот</a> архив.</p>
 
 <h4>Установка из репозитория &#8220;elrepo&#8221;</h4>
 

@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-07-11T21:01:06+03:00</updated>
+  <updated>2013-07-11T21:04:50+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -19,7 +19,7 @@
     <updated>2013-07-10T16:13:00+03:00</updated>
     <id>http://Sibilia.github.com/blog/2013/07/10/rieplikatsiia-diskov-po-sieti-s-pomoshchiu-drbd</id>
     <content type="html"><![CDATA[<p>В этой статье я рассмотрю установку и настройку распределённой файловой системы с использованием DRBD. Данное решение может применяться для ряда задач в кластерах высокой доступности (High Availability). Для начала, разъясним понятие DRBD:
-<img class="center" src="http://Sibilia.github.com/images/DRBD.gif" width="350" height="350" title="DRBD" alt="DRBD"></p>
+<img class="center" src="http://Sibilia.github.com/images/DRBD.gif" title="DRBD" alt="DRBD"></p>
 
 <blockquote><p>DRBD (от англ. Distributed Replicated Block Device — «Распределённое Копируемое Блочное Устройство») — это блочное устройство, обеспечивающее синхронизацию (RAID1) между локальным блочным устройством и удалённым.</p></blockquote>
 

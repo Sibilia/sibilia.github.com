@@ -4,7 +4,7 @@
   <title><![CDATA[Category: cluster | Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/blog/categories/cluster/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-07-15T18:51:10+03:00</updated>
+  <updated>2013-07-22T12:19:00+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -90,7 +90,7 @@ yum install --enablerepo=elrepo drbd84-utils kmod-drbd84
 
 <h3>Настройка</h3>
 
-<p>Начнём с глобального конфигурационного файла <em>/etc/drbd.d/global_common.conf</em>. В нём прописываются параметры общие для всех <em>ресурсов</em>. Приведу пример (за подрбнастями как обычно в <em>man drbd.conf</em>):
+<p>Начнём с глобального конфигурационного файла <em>/etc/drbd.d/global_common.conf</em>. В нём прописываются параметры общие для всех <em>ресурсов</em>. Приведу пример (за подробнастями как обычно в <em>man drbd.conf</em>):
 ```
 global {
 }
@@ -189,7 +189,7 @@ drbdadm up r0
 <p>```
 Устройство drbd готово к использованию.</p>
 
-<p>У DRBD есть два режима работы: Active-Pacive и Active-Active.</p>
+<p>У DRBD есть два режима работы: Active-Pacive и Active-Active. Рассмотрим оба.</p>
 
 <h4>Режим Active-Pacive</h4>
 
@@ -216,7 +216,7 @@ drbdadm down r0
 <p>crm(live)# configure
 crm(live)configure# edit
 <code>
-Приведу лишь часть конфига которую добавляем для drbd:
+Приведу лишь часть конфигурации которую добавляем для drbd:
 </code>
 ...
 primitive drbd_data ocf:linbit:drbd \</p>
@@ -278,7 +278,7 @@ crm(live)configure# commit</p>
 
 <h4>Режим Active-Active</h4>
 
-<p>Тут всё немного усложняется тем, что нам уже нужно использовать клсатерные файловые системы. Я приведу пример настройки GFS2.</p>
+<p>Тут всё немного усложняется тем, что нам уже нужно использовать кластерные файловые системы. Я приведу пример настройки GFS2.</p>
 
 <p>Для начала нужно изменить конфигурацию drbd, разрешив режим active-active. Привожу изменённый файл <em>/etc/drbd.d/global_common.conf</em>:
 ```
@@ -303,9 +303,9 @@ common {</p>
 </code>
 yum install gfs2-utils gfs2-cluster
 ```
-Так же для gfs2 нужен <em>cman</em>, но он у нас установлен ещё в предыдущей статье, как и настроен его конфиг /etc/cluster/cluster.conf.</p>
+Так же для gfs2 нужен <em>cman</em>, но он у нас установлен ещё в предыдущей статье, как и настроена его конфигурация /etc/cluster/cluster.conf.</p>
 
-<p>Создаём файловую систему gfs2 на диске drbd (на той, что primary):
+<p>Создаём файловую систему gfs2 на диске drbd (на той ноде, что primary):
 ```</p>
 
 <h1>mkfs.gfs2 -p lock_dlm -j 2 -t my_cluster:data /dev/drbd1</h1>
@@ -326,7 +326,7 @@ Lock Table:                "my_cluster:data"
 UUID:                      78a43254-2c97-1116-5328-3a313ff433f3
 <code>
 По поводу параметров: *-j 2* указывает что создавать надо два журнала, *-t my_cluster:data* указываем имя кластера (он прописан в /etc/cluster/cluster.conf) и имя таблицы блокировок.
-Отлично, файловая система готова. Останавливаем drbd и правим конфигурацию кластера (Опять же привожу лишь часть для drbd):
+Отлично, файловая система готова. Останавливаем drbd и правим конфигурацию кластера (опять же привожу лишь часть для drbd):
 </code>
 drbdadm down r0
 crm
@@ -364,9 +364,9 @@ colocation drbd_fs-data inf: ms_drbd_data:Master fs-data_clone
 order fs-data_after_drbd inf: ms_drbd_data:promote fs-data_clone:start
 ...
 ```
-Отличия от active-slave в том, что мы указываем <em>master-max="2"</em> и само сабой <em>fstype="gfs2"</em>. Так же я добавил <em>clone</em> для <em>fs-data</em>.</p>
+Отличия от active-slave в том, что мы указываем <em>master-max="2"</em> и само собой <em>fstype="gfs2"</em>. Так же я добавил <em>clone</em> для <em>fs-data</em>.</p>
 
-<p>Чтож, посмтрим что у нас вышло:
+<p>Чтож, посмотрим что у нас вышло:
 ```</p>
 
 <h1>crm_mon -1</h1>
@@ -397,7 +397,7 @@ Online: [ node1 node2 ]</p>
 
 <p>  1:r0/0  Connected Primary/Primary UpToDate/UpToDate C r----- /mnt/data gfs2 1.0G 259M 766M 26%
 ```
-Вот в принципе и всё. По поводу решения некоторых проблем с drbd я делал заметку <a href="http://sibilia.github.io/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">тут</a></p>
+Вот в принципе и всё. По поводу решения некоторых проблем с drbd я делал заметку <a href="http://sibilia.github.io/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">тут</a>.</p>
 ]]></content>
   </entry>
   

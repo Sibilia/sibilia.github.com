@@ -4,7 +4,7 @@
   <title><![CDATA[Sibilia octopress blog]]></title>
   <link href="http://Sibilia.github.com/atom.xml" rel="self"/>
   <link href="http://Sibilia.github.com/"/>
-  <updated>2013-07-15T18:51:10+03:00</updated>
+  <updated>2013-07-22T12:19:00+03:00</updated>
   <id>http://Sibilia.github.com/</id>
   <author>
     <name><![CDATA[Ilia Sibiryatkin]]></name>
@@ -124,7 +124,7 @@
 
 <h3>Настройка</h3>
 
-<p>Начнём с глобального конфигурационного файла <em>/etc/drbd.d/global_common.conf</em>. В нём прописываются параметры общие для всех <em>ресурсов</em>. Приведу пример (за подрбнастями как обычно в <em>man drbd.conf</em>):</p>
+<p>Начнём с глобального конфигурационного файла <em>/etc/drbd.d/global_common.conf</em>. В нём прописываются параметры общие для всех <em>ресурсов</em>. Приведу пример (за подробнастями как обычно в <em>man drbd.conf</em>):</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -246,7 +246,7 @@
 
 <p>Устройство drbd готово к использованию.</p>
 
-<p>У DRBD есть два режима работы: Active-Pacive и Active-Active.</p>
+<p>У DRBD есть два режима работы: Active-Pacive и Active-Active. Рассмотрим оба.</p>
 
 <h4>Режим Active-Pacive</h4>
 
@@ -282,7 +282,7 @@
 </span><span class='line'>crm(live)configure# edit</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Приведу лишь часть конфига которую добавляем для drbd:</p>
+<p>Приведу лишь часть конфигурации которую добавляем для drbd:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -340,7 +340,7 @@
 <span class='line-number'>18</span>
 <span class='line-number'>19</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>crm(live)configure# commit
-</span><span class='line'># crm\_mon -fnr
+</span><span class='line'># crm_mon -fnr
 </span><span class='line'>Node node1: online
 </span><span class='line'>        fs-data (ocf::heartbeat:Filesystem):    Started
 </span><span class='line'>        nginx1  (ocf::heartbeat:nginx): Started
@@ -364,7 +364,7 @@
 
 <h4>Режим Active-Active</h4>
 
-<p>Тут всё немного усложняется тем, что нам уже нужно использовать клсатерные файловые системы. Я приведу пример настройки GFS2.</p>
+<p>Тут всё немного усложняется тем, что нам уже нужно использовать кластерные файловые системы. Я приведу пример настройки GFS2.</p>
 
 <p>Для начала нужно изменить конфигурацию drbd, разрешив режим active-active. Привожу изменённый файл <em>/etc/drbd.d/global_common.conf</em>:</p>
 
@@ -402,9 +402,9 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>yum install gfs2-utils gfs2-cluster</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Так же для gfs2 нужен <em>cman</em>, но он у нас установлен ещё в предыдущей статье, как и настроен его конфиг /etc/cluster/cluster.conf.</p>
+<p>Так же для gfs2 нужен <em>cman</em>, но он у нас установлен ещё в предыдущей статье, как и настроена его конфигурация /etc/cluster/cluster.conf.</p>
 
-<p>Создаём файловую систему gfs2 на диске drbd (на той, что primary):</p>
+<p>Создаём файловую систему gfs2 на диске drbd (на той ноде, что primary):</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -439,7 +439,7 @@
 
 
 <p>По поводу параметров: <em>-j 2</em> указывает что создавать надо два журнала, <em>-t my_cluster:data</em> указываем имя кластера (он прописан в /etc/cluster/cluster.conf) и имя таблицы блокировок.
-Отлично, файловая система готова. Останавливаем drbd и правим конфигурацию кластера (Опять же привожу лишь часть для drbd):</p>
+Отлично, файловая система готова. Останавливаем drbd и правим конфигурацию кластера (опять же привожу лишь часть для drbd):</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -487,9 +487,9 @@
 </span><span class='line'>...</span></code></pre></td></tr></table></div></figure>
 
 
-<p>Отличия от active-slave в том, что мы указываем <em>master-max=&#8221;2&#8221;</em> и само сабой <em>fstype=&#8221;gfs2&#8221;</em>. Так же я добавил <em>clone</em> для <em>fs-data</em>.</p>
+<p>Отличия от active-slave в том, что мы указываем <em>master-max=&#8221;2&#8221;</em> и само собой <em>fstype=&#8221;gfs2&#8221;</em>. Так же я добавил <em>clone</em> для <em>fs-data</em>.</p>
 
-<p>Чтож, посмтрим что у нас вышло:</p>
+<p>Чтож, посмотрим что у нас вышло:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -527,7 +527,7 @@
 </span><span class='line'>  1:r0/0  Connected Primary/Primary UpToDate/UpToDate C r----- /mnt/data gfs2 1.0G 259M 766M 26% </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Вот в принципе и всё. По поводу решения некоторых проблем с drbd я делал заметку <a href="http://sibilia.github.io/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">тут</a></p>
+<p>Вот в принципе и всё. По поводу решения некоторых проблем с drbd я делал заметку <a href="http://sibilia.github.io/blog/2013/01/29/rieshieniie-niekotorykh-probliem-v-drbd/">тут</a>.</p>
 ]]></content>
   </entry>
   
